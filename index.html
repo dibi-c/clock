@@ -235,6 +235,38 @@
         </div>
     </div>
 
+
+<script>
+    function openCfg() {
+        document.getElementById('configModal').style.display = 'flex';
+    }
+
+    function closeCfg() {
+        document.getElementById('configModal').style.display = 'none';
+    }
+
+    function saveCfg() {
+        const input = document.getElementById('fbInput');
+        if (input && input.value) {
+            localStorage.setItem('bms_v48_cloud', input.value);
+            location.reload();
+        } else {
+            alert("Masukkan JSON konfigurasi terlebih dahulu.");
+        }
+    }
+    
+    // Pastikan fungsi ini bisa diakses secara global
+    window.openCfg = openCfg;
+    window.closeCfg = closeCfg;
+    window.saveCfg = saveCfg;
+</script>
+
+<script type="module">
+    // ... isi kode firebase Anda tetap di sini ...
+    // Hapus bagian window.openCfg yang ada di dalam sini agar tidak bentrok
+</script>
+
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
@@ -590,27 +622,6 @@ window.handleDurationChange = async () => {
 };
 
         function update(id, v) { const e = document.getElementById(id); if(e) e.innerText = v; }
-        // Cari bagian ini di kode Anda dan sesuaikan:
-
-window.openCfg = function() {
-    const modal = document.getElementById('configModal');
-    if (modal) modal.style.display = 'flex';
-};
-
-window.closeCfg = function() {
-    const modal = document.getElementById('configModal');
-    if (modal) modal.style.display = 'none';
-};
-
-window.saveCfg = function() {
-    const input = document.getElementById('fbInput');
-    if (input && input.value) {
-        localStorage.setItem('bms_v48_cloud', input.value);
-        location.reload();
-    } else {
-        alert("Masukkan JSON konfigurasi terlebih dahulu.");
-    }
-};
-    </script>
+       </script>
 </body>
 </html>
