@@ -590,9 +590,27 @@ window.handleDurationChange = async () => {
 };
 
         function update(id, v) { const e = document.getElementById(id); if(e) e.innerText = v; }
-        window.openCfg = () => document.getElementById('configModal').style.display = 'flex';
-        window.closeCfg = () => document.getElementById('configModal').style.display = 'none';
-        window.saveCfg = () => { localStorage.setItem('bms_v48_cloud', document.getElementById('fbInput').value); location.reload(); };
+        // Cari bagian ini di kode Anda dan sesuaikan:
+
+window.openCfg = function() {
+    const modal = document.getElementById('configModal');
+    if (modal) modal.style.display = 'flex';
+};
+
+window.closeCfg = function() {
+    const modal = document.getElementById('configModal');
+    if (modal) modal.style.display = 'none';
+};
+
+window.saveCfg = function() {
+    const input = document.getElementById('fbInput');
+    if (input && input.value) {
+        localStorage.setItem('bms_v48_cloud', input.value);
+        location.reload();
+    } else {
+        alert("Masukkan JSON konfigurasi terlebih dahulu.");
+    }
+};
     </script>
 </body>
 </html>
