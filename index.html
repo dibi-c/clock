@@ -275,7 +275,7 @@
         // Initialize Dexie
         const db = new Dexie("BMS_History_DB");
         db.version(1).stores({
-            history: '++id, ts, w, v, a, t'
+            history: '++id, ts, w, v, a, t, tb'
         });
 
         let firestore = null;
@@ -540,7 +540,8 @@ if (currentSnapshot !== lastErrorCode) {
                     w: d.p || 0,
                     v: d.v || 0,
                     a: d.a || 0,
-                    t: d.tM || 0
+                    t: d.tM || 0,
+                    tb: d.tB || 0
                 });
             }
 
@@ -607,6 +608,7 @@ window.handleDurationChange = async () => {
         unifiedChart.data.datasets[1].data = allData.map(d => d.v);
         unifiedChart.data.datasets[2].data = allData.map(d => d.a);
         unifiedChart.data.datasets[3].data = allData.map(d => d.t);
+        unifiedChart.data.datasets[4].data = allData.map(d => d.tb);
 
         unifiedChart.update('none');
         
