@@ -2,350 +2,597 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jam Kontras Tinggi ✨</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORE BMS REMOTE | DECADE EDITION v5.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script>eruda.init();</script>
+
+
     <style>
-        :root {
-            --bg-dark: #000000;
-            --accent: #facc15; 
-            --secondary: #ffffff;
-            --clock-size: min(75vw, 60vh);
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=JetBrains+Mono:wght@400;800&display=swap');
+        
+        :root { 
+            --accent: #f59e0b; 
+            --bg: #020408;
+            --glass: rgba(10, 14, 23, 0.7);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
+        body { 
+            font-family: 'Space Grotesk', sans-serif; 
+            background: var(--bg); color: #f8fafc;
+            background-image: 
+                linear-gradient(to bottom, rgba(2, 4, 8, 0.9), rgba(2, 4, 8, 1)),
+                url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
+            min-height: 100vh;
         }
 
-        body {
-            background-color: var(--bg-dark);
-            color: var(--secondary);
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .glass-panel { 
+            background: var(--glass); 
+            backdrop-filter: blur(20px); 
+            border: 1px solid rgba(255, 255, 255, 0.03); 
+            border-radius: 28px; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
         }
+        .glass-panel:hover { border-color: rgba(245, 158, 11, 0.2); }
 
-        .app-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 2rem;
-            z-index: 10;
-            width: 100%;
-            height: 100%;
-            padding: 1.5rem;
-        }
+        .big-number { font-family: 'JetBrains Mono', monospace; font-weight: 800; letter-spacing: -0.05em; }
+        .label-tech { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; color: #475569; }
+        
+        .progress-ring { transition: stroke-dashoffset 0.8s ease-in-out; }
+        
+        #securityHistory::-webkit-scrollbar { width: 4px; }
+        #securityHistory::-webkit-scrollbar-track { background: transparent; }
+        #securityHistory::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
 
-        /* Analog Clock Style */
-        .analog-clock {
-            width: var(--clock-size);
-            height: var(--clock-size);
-            border: 6px solid rgba(255, 255, 255, 0.15);
-            border-radius: 50%;
-            position: relative;
-            background: #050505;
-            flex-shrink: 0;
-        }
-
-        .dot {
-            width: 4%; height: 4%;
-            background: var(--accent);
-            border-radius: 50%;
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 30;
-            box-shadow: 0 0 15px var(--accent);
-        }
-
-        .hand {
-            position: absolute;
-            bottom: 50%; left: 50%;
-            transform-origin: bottom;
-            border-radius: 50px;
-        }
-
-        .hour-hand { 
-            width: 3.5%; height: 26%; 
-            background: var(--accent); 
-            margin-left: -1.75%; 
-            z-index: 15;
-        }
-        .min-hand { 
-            width: 2.5%; height: 38%; 
-            background: var(--secondary); 
-            margin-left: -1.25%; 
-            z-index: 14; 
-        }
-        .sec-hand { 
-            width: 1%; height: 44%; 
-            background: #ef4444; 
-            margin-left: -0.5%; 
-            z-index: 16; 
-        }
-
-        .number {
-            position: absolute;
-            width: 100%; height: 100%;
-            text-align: center;
-            font-weight: 800;
-            font-size: calc(var(--clock-size) * 0.08);
-            padding: 4%;
-            color: var(--secondary);
-        }
-
-        /* Digital Clock - BIGGER & WITH SECONDS */
-        .overlay-info {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1.2rem;
-            width: 100%;
-        }
-
-        #digitalClock {
-            font-size: min(20vw, 6.5rem);
-            font-weight: 900;
-            letter-spacing: -4px;
-            color: var(--accent);
-            line-height: 1;
-            font-variant-numeric: tabular-nums;
-            text-shadow: 0 0 30px rgba(250, 204, 21, 0.3);
-            display: flex;
-            align-items: baseline;
-        }
-
-        #digitalSeconds {
-            font-size: 0.45em;
-            margin-left: 8px;
-            opacity: 0.8;
-            letter-spacing: -1px;
-        }
-
-        .glass-pill {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 50px;
-            padding: 0.6rem 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        #gemini-modal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.95);
-            backdrop-filter: blur(20px);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .fs-btn {
-            position: fixed;
-            top: 1.2rem;
-            right: 1.2rem;
-            z-index: 100;
-            background: rgba(255, 255, 255, 0.15);
-            padding: 0.8rem;
-            border-radius: 12px;
-            cursor: pointer;
-        }
-
-        @media (orientation: landscape) {
-            .app-container {
-                flex-direction: row;
-                gap: 6vw;
-            }
-            .overlay-info {
-                align-items: flex-start;
-                width: auto;
-            }
-            :root {
-                --clock-size: min(48vw, 80vh);
-            }
-            #digitalClock {
-                font-size: min(12vw, 8rem);
-            }
-        }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(20px); }
+        .history-entry { font-family: 'JetBrains Mono', monospace; font-size: 10px; border-bottom: 1px solid rgba(255,255,255,0.03); padding: 4px 0; }
     </style>
 </head>
-<body onclick="activateWake()">
+<body class="p-4 md:p-8">
 
-    <button class="fs-btn" onclick="toggleFullscreen()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
-    </button>
-
-    <div class="app-container">
-        <!-- Analog Clock -->
-        <div class="analog-clock" id="clock">
-            <div class="dot"></div>
-            <div class="hand hour-hand" id="h-hand"></div>
-            <div class="hand min-hand" id="m-hand"></div>
-            <div class="hand sec-hand" id="s-hand"></div>
-        </div>
-
-        <!-- Big Digital Info -->
-        <div class="overlay-info">
-            <div id="digitalClock">
-                <span id="digitalHMS">00:00</span>
-                <span id="digitalSeconds">00</span>
+    <div class="max-w-[1600px] mx-auto">
+        <nav class="flex justify-between items-center mb-8">
+            <div class="flex items-center gap-4">
+                <div class="h-12 w-12 bg-amber-500 rounded-2xl flex items-center justify-center font-bold text-black text-2xl">C</div>
+                <div>
+                    <h1 class="text-2xl font-bold tracking-tighter leading-none">CORE<span class="text-amber-500">.</span>REMOTE</h1>
+                    <p class="label-tech">Decade Terminal v5.1 - Analytics Engine</p>
+                </div>
             </div>
-            
-            <div class="glass-pill">
-                <span id="temp" class="font-black text-2xl text-yellow-400">--°C</span>
-                <div class="w-[1px] h-6 bg-white/20"></div>
-                <div class="flex flex-col">
-                    <span id="weatherDesc" class="text-xs font-bold uppercase">Memuat...</span>
-                    <span id="city" class="text-[10px] opacity-70">--</span>
+            <div class="flex items-center gap-4">
+                <div id="progressContainer" class="hidden w-32 h-1 bg-white/5 rounded-full overflow-hidden mr-4">
+                    <div id="syncProgressBar" class="h-full bg-amber-500 transition-all duration-300" style="width: 0%"></div>
+                </div>
+
+                <div id="syncBadge" class="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full border border-white/10">
+                    <div id="statusPulse" class="h-2 w-2 rounded-full bg-amber-500 animate-pulse"></div>
+                    <span class="label-tech text-white" id="lastUpdate">Connecting Cloud...</span>
+                </div>
+                <button onclick="openCfg()" class="p-3 bg-white/5 hover:bg-white/10 rounded-2xl transition-all">⚙️</button>
+            </div>
+        </nav>
+
+        <div class="grid grid-cols-12 gap-6">
+            <div class="col-span-12 lg:col-span-4 space-y-6">
+                <div class="glass-panel p-8 flex flex-col items-center relative overflow-hidden">
+                    <span class="label-tech mb-6">Energy Level</span>
+                    <div class="relative flex items-center justify-center">
+                        <svg class="w-64 h-64 transform -rotate-90">
+                            <circle cx="128" cy="128" r="110" stroke="currentColor" stroke-width="8" fill="transparent" class="text-white/5" />
+                            <circle id="socCircle" cx="128" cy="128" r="110" stroke="#f59e0b" stroke-width="12" fill="transparent" stroke-dasharray="691" stroke-dashoffset="691" stroke-linecap="round" class="progress-ring" />
+                        </svg>
+                        <div class="absolute text-center">
+                            <span id="soc" class="big-number text-8xl">0</span>
+                            <span class="text-2xl font-light text-slate-500">%</span>
+                        </div>
+                    </div>
+   
+
+       <div class="mt-4 text-center">
+    <p class="label-tech opacity-40 !text-[7px] uppercase mb-0.5">Time Remaining</p>
+    <p id="time-remaining-value" class="big-number text-sm text-slate-400 font-light tracking-tight">--</p>
+</div>
+                    <div class="grid grid-cols-2 gap-8 mt-10 w-full border-t border-white/5 pt-8">
+                        <div class="text-center">
+                            <p class="label-tech">Current (A)</p>
+                            <p class="big-number text-3xl text-amber-500" id="current">0.00</p>
+                        </div>
+                        <div class="text-center border-l border-white/5">
+                            <p class="label-tech">Load (W)</p>
+                            <p class="big-number text-3xl text-blue-500" id="power">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-6 grid grid-cols-2 gap-4">
+                    <div id="rChg" class="flex items-center justify-center gap-3 py-3 rounded-2xl bg-white/5 opacity-20 transition-all border border-white/5">
+                        <span class="text-lg">⚡</span><span class="label-tech">Charging</span>
+                    </div>
+                    <div id="rDis" class="flex items-center justify-center gap-3 py-3 rounded-2xl bg-white/5 opacity-20 transition-all border border-white/5">
+                        <span class="text-lg">🔌</span><span class="label-tech">Discharge</span>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-6">
+                    <span class="label-tech text-red-500">System Thermals</span>
+                    <div class="flex justify-between mt-4">
+                        <div class="bg-white/5 p-4 rounded-2xl w-[48%]">
+                            <p class="label-tech !text-[8px]">Mosfet</p>
+                            <p id="tMos" class="big-number text-2xl">0°C</p>
+                        </div>
+                        <div class="bg-white/5 p-4 rounded-2xl w-[48%] border-l-2 border-orange-500">
+                            <p class="label-tech !text-[8px]">Battery</p>
+                            <p id="tBatt" class="big-number text-2xl text-orange-500">0°C</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="flex gap-4">
-                <button onclick="askGemini('activity')" class="px-8 py-3 rounded-2xl bg-yellow-400 text-black text-xs font-black uppercase tracking-widest">
-                    ✨ Saran AI
-                </button>
-                <button onclick="askGemini('quote')" class="px-8 py-3 rounded-2xl bg-white text-black text-xs font-black uppercase tracking-widest">
-                    ✨ Motivasi
-                </button>
+            <div class="col-span-12 lg:col-span-8 space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="glass-panel p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <span class="label-tech">Cell Voltages</span>
+                            <span id="vTotal" class="big-number text-2xl text-white">0.00V</span>
+                        </div>
+                        <div class="grid grid-cols-4 gap-3">
+                            <div class="text-center"><p class="label-tech !text-[7px]">C1</p><p id="v1" class="big-number text-sm">0.00</p></div>
+                            <div class="text-center border-l border-white/5"><p class="label-tech !text-[7px]">C2</p><p id="v2" class="big-number text-sm">0.00</p></div>
+                            <div class="text-center border-l border-white/5"><p class="label-tech !text-[7px]">C3</p><p id="v3" class="big-number text-sm">0.00</p></div>
+                            <div class="text-center border-l border-white/5"><p class="label-tech !text-[7px]">C4</p><p id="v4" class="big-number text-sm">0.00</p></div>
+                        </div>
+                    </div>
+                    <div class="glass-panel p-6">
+                        <span class="label-tech">Energy Management</span>
+                        <div class="grid grid-cols-2 gap-4 mt-4">
+                            <div><p class="label-tech !text-[7px] opacity-50">Wh Design/Now</p><p class="text-xs font-bold"><span id="whDesign">0</span> / <span id="whNow" class="text-blue-400">0</span></p></div>
+                            <div><p class="label-tech !text-[7px] opacity-50">Ah Design/Now</p><p class="text-xs font-bold"><span id="ahDesign">0.0</span> / <span id="ahNow" class="text-blue-400">0.0</span></p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <div class="flex flex-col gap-1">
+                            <span class="label-tech">Data Stream Analytics</span>
+                            <div class="flex gap-4 text-[7px] font-bold">
+                               <span class="text-blue-500">● LOAD (W)</span> 
+    <span class="text-emerald-500">● VOLTAGE (V)</span> 
+    <span class="text-orange-500">● CURRENT (A)</span> 
+    <span class="text-red-500">● TEMP MOSFET</span>
+    <span class="text-yellow-500">● TEMP BATT</span>
+                            </div>
+                        </div>
+                        <select id="chartDuration" onchange="window.handleDurationChange()" class="bg-black/50 border border-white/10 rounded-lg px-2 py-1 text-[10px] label-tech text-white outline-none">
+                            <option value="live">Live Stream</option>
+                            <option value="12h">Last 12 Hours</option>
+                            <option value="24h">Last 24 Hours</option>
+                            <option value="7d">Last 7 Days</option>
+                        </select>
+                    </div>
+                    <div class="h-[280px]"><canvas id="unifiedChart"></canvas></div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+                    <div id="errorCard" class="glass-panel p-6 md:col-span-8 border-l-4 border-emerald-500 flex flex-col gap-4">
+                        <div class="flex items-center gap-4">
+                            <div id="statusDot" class="h-4 w-4 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981]"></div>
+                            <div>
+                                <p class="label-tech">Security Status</p>
+                                <h3 id="errText" class="big-number text-lg uppercase text-emerald-500 leading-tight">System Secure</h3>
+                            </div>
+                        </div>
+                        <div class="border-t border-white/5 pt-4">
+                            <p class="label-tech !text-[7px] mb-2">Event History</p>
+                            <div id="securityHistory" class="max-h-24 overflow-y-auto pr-2">
+                                <div class="history-entry text-slate-600 italic">Waiting for telemetry...</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="glass-panel p-6 md:col-span-4">
+                        <div class="flex justify-between items-center">
+                            <span class="label-tech">Cycles / SOH</span>
+                            <span id="soh" class="big-number text-blue-400 text-lg">0%</span>
+                        </div>
+                        <p id="cycles" class="big-number text-3xl mt-2">0</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6">
+                    <div class="glass-panel p-6">
+                        <span class="label-tech">Charge & Discharge Stats</span>
+                        <div class="grid grid-cols-2 gap-4 mt-4">
+                            <div><p class="label-tech !text-[7px] text-emerald-500">Wh In (+)</p><p id="whPos" class="big-number text-xl">0</p></div>
+                            <div><p class="label-tech !text-[7px] text-red-500">Wh Out (-)</p><p id="whNeg" class="big-number text-xl">0</p></div>
+                        </div>
+                    </div>
+                    <div class="glass-panel p-6">
+                        <span class="label-tech">Capacity Lifecycle</span>
+                        <div class="flex justify-between items-end mt-4">
+                            <div><p class="label-tech !text-[7px]">Usage Intensity</p><p id="usagePer" class="big-number text-2xl text-amber-500">0%</p></div>
+                            <div class="text-right">
+                                <p class="label-tech !text-[8px] opacity-50">Ah In/Out</p>
+                                <p class="text-[10px] value-mono"><span id="capChg">0.0</span> / <span id="capDis">0.0</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Gemini Modal -->
-    <div id="gemini-modal" onclick="closeModal()">
-        <div class="bg-zinc-900 border-2 border-yellow-400 p-8 rounded-3xl max-w-sm w-full" onclick="event.stopPropagation()">
-            <div class="text-yellow-400 text-[10px] font-black uppercase tracking-[0.2em] mb-4">Gemini Insight</div>
-            <div id="modal-content" class="text-xl leading-snug text-white font-medium italic">...</div>
-            <button onclick="closeModal()" class="mt-8 w-full py-4 bg-yellow-400 text-black rounded-xl text-sm font-black uppercase">Tutup</button>
+    <div id="configModal" class="modal">
+        <div class="glass-panel w-full max-w-lg p-8">
+            <h2 class="text-xl font-bold label-tech text-white mb-6">Cloud Configuration</h2>
+            <textarea id="fbInput" class="w-full h-48 bg-black/50 border border-white/10 rounded-2xl p-4 text-[10px] value-mono text-emerald-400 outline-none mb-6" placeholder='Paste Firebase JSON here...'></textarea>
+            <button onclick="saveCfg()" class="w-full bg-amber-600 hover:bg-amber-500 py-4 rounded-2xl font-bold label-tech text-white transition-all">Save & Connect</button>
+            <button onclick="closeCfg()" class="w-full mt-3 text-slate-500 label-tech py-2">Cancel</button>
         </div>
     </div>
 
-    <script>
-        const apiKey = "";
-        let wakeLock = null;
-        let weatherData = { temp: "", desc: "", city: "" };
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
+        import { getFirestore, collection, query, where, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
-        function initNumbers() {
-            const clock = document.getElementById('clock');
-            for (let i = 1; i <= 12; i++) {
-                const num = document.createElement('div');
-                num.className = 'number';
-                num.style.transform = `rotate(${i * 30}deg)`;
-                num.innerHTML = `<div style="transform: rotate(-${i * 30}deg)">${i}</div>`;
-                clock.appendChild(num);
-            }
-        }
+        // Initialize Dexie
+        const db = new Dexie("BMS_History_DB");
+        db.version(1).stores({
+            history: '++id, ts, w, v, a, t'
+        });
 
-        async function activateWake() {
-            if ('wakeLock' in navigator) {
-                try { wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {}
-            }
-        }
+        let firestore = null;
+        let liveMode = true;
+        let lastErrorCode = -1;
 
-        function toggleFullscreen() {
-            if (!document.fullscreenElement) document.documentElement.requestFullscreen();
-            else document.exitFullscreen();
-        }
 
-        function update() {
-            const now = new Date();
-            const h = now.getHours();
-            const m = now.getMinutes();
-            const s = now.getSeconds();
-            
-            // Update Digital Clock with Seconds
-            document.getElementById('digitalHMS').textContent = 
-                `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-            document.getElementById('digitalSeconds').textContent = 
-                String(s).padStart(2, '0');
-            
-            // Update Analog Hands
-            const sDeg = (s / 60) * 360;
-            const mDeg = ((m / 60) * 360) + ((s / 60) * 6);
-            const hDeg = ((h % 12 / 12) * 360) + ((m / 60) * 30);
+/**
+ * Fungsi untuk menghitung sisa waktu baterai (TTE/TTF)
+ * @param {number} ahIn - Kapasitas penuh / Total Ah masuk (fullCap)
+ * @param {number} ahOut - Total Ah keluar (dchgCap)
+ */
+function updateTimeRemaining(ahIn, ahOut) {
+    const timeRemainingElement = document.getElementById('time-remaining-value');
+    if (!timeRemainingElement) return;
 
-            document.getElementById('s-hand').style.transform = `rotate(${sDeg}deg)`;
-            document.getElementById('m-hand').style.transform = `rotate(${mDeg}deg)`;
-            document.getElementById('h-hand').style.transform = `rotate(${hDeg}deg)`;
-        }
+    // 1. Ambil data dari UI (Pastikan ID sesuai dengan elemen HTML Anda)
+    const currentFromUI = parseFloat(document.getElementById('current').textContent) || 0;
+    const capRemFromUI = parseFloat(document.getElementById('ahNow').textContent) || 0;
 
-        async function fetchWeather() {
-            const getCoords = () => new Promise((resolve, reject) => {
-                navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
-            });
+    // 2. Logika Kapasitas
+    let currentRem = currentFromUI;
+    let fullCap = ahIn;
+    let dchgCap = ahOut;
 
-            try {
-                let lat, lon, city = "Lokasi";
-                try {
-                    const pos = await getCoords();
-                    lat = pos.coords.latitude;
-                    lon = pos.coords.longitude;
-                    const revRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
-                    const revData = await revRes.json();
-                    city = revData.address.city || revData.address.town || "Sekitar Anda";
-                } catch (geoError) {
-                    const lRes = await fetch('https://ipapi.co/json/');
-                    const lData = await lRes.json();
-                    lat = lData.latitude; lon = lData.longitude; city = lData.city;
+    // Rumus diff: Hasil 0 jika dchgCap > fullCap
+    let diff = Math.max(0, fullCap - dchgCap);
+    
+    // remainingCap adalah kapasitas yang benar-benar bisa digunakan
+    let remainingCap = Math.max(0, capRemFromUI - diff);
+
+    let timeRemainingText;
+    let timeToEmptyHours = null;
+    let timeToFullHours = null;
+
+    // 3. Penentuan Kondisi Berdasarkan Arus (Current)
+    if (Math.abs(currentRem) < 0.1) {
+        // Jika arus sangat kecil (di bawah 0.1A), dianggap Standby/Diam
+        timeRemainingText = "Diam";
+    } 
+    else if (currentRem > 0) {
+        // CHARGING (Menuju Full)
+        const capToFull = fullCap - capRemFromUI;
+        // TTF = Sisa kapasitas yang perlu diisi / Arus pengisian
+        timeToFullHours = capToFull > 0 ? capToFull / currentRem : 0;
+        timeRemainingText = formatTime(timeToFullHours) + " (TTF)";
+    } 
+    else {
+        // DISCHARGING (Menuju Kosong)
+        // TTE = Kapasitas sisa saat ini / Mutlak Arus pemakaian
+        timeToEmptyHours = remainingCap / Math.abs(currentRem);
+        timeRemainingText = formatTime(timeToEmptyHours) + " (TTE)";
+    }
+
+    // 4. Update Tampilan UI
+    timeRemainingElement.textContent = `Waktu Sisa: ${timeRemainingText}`;
+}
+
+/**
+ * Helper untuk memformat jam desimal ke format Jam & Menit
+ */
+function formatTime(hours) {
+    if (hours === Infinity || isNaN(hours)) return "--";
+    if (hours <= 0) return "0m";
+    
+    const h = Math.floor(hours);
+    const m = Math.round((hours - h) * 60);
+    
+    if (h > 0) return `${h}j ${m}m`;
+    return `${m}m`;
+}
+
+
+        const errorDict = {
+            0: "Normal Operation",
+            1: "Cell Undervoltage",
+            3: "EEPROM Memory Error",
+            4: "Thermal Anomaly",
+            5: "Activation Failure",
+            6: "Short Circuit Detected",
+            7: "Overcurrent Protection",
+            8: "Critical Battery",
+            9: "Charge Overvoltage",
+            10: "Low Battery",
+            11: "Load Overload"
+        };
+
+        const ctx = document.getElementById('unifiedChart').getContext('2d');
+        const unifiedChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+   datasets: [
+    { label: 'Watt', data: [], borderColor: '#3b82f6', borderWidth: 2, tension: 0.4, pointRadius: 0, yAxisID: 'y' },
+    { label: 'Volt', data: [], borderColor: '#10b981', borderWidth: 2, tension: 0.4, pointRadius: 0, yAxisID: 'y' },
+    { label: 'Amp', data: [], borderColor: '#f59e0b', borderWidth: 1.5, tension: 0.4, pointRadius: 0, yAxisID: 'y1' },
+    // Index 3: Mosfet (Garis Putus-putus Merah)
+    { label: 'T-Mos', data: [], borderColor: '#ef4444', borderWidth: 1, borderDash: [5, 5], tension: 0.4, pointRadius: 0, yAxisID: 'y1' },
+    // Index 4: Battery (Garis Putus-putus Kuning)
+    { label: 'T-Batt', data: [], borderColor: '#eab308', borderWidth: 1, borderDash: [5, 5], tension: 0.4, pointRadius: 0, yAxisID: 'y1' }
+]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { 
+                    x: { display: false }, 
+                    y: { position: 'left', grid: { color: 'rgba(255,255,255,0.02)' }, ticks: { color: '#475569', font: { size: 9 } } },
+                    y1: { position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#64748b', font: { size: 8 } } }
                 }
-
-                document.getElementById('city').textContent = city;
-                weatherData.city = city;
-
-                const wRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
-                const wData = await wRes.json();
-                
-                weatherData.temp = Math.round(wData.current_weather.temperature);
-                document.getElementById('temp').textContent = `${weatherData.temp}°C`;
-                
-                const labels = { 0: "Cerah", 1: "Cerah", 2: "Berawan", 3: "Mendung", 61: "Hujan", 95: "Badai" };
-                weatherData.desc = labels[wData.current_weather.weathercode] || "Berawan";
-                document.getElementById('weatherDesc').textContent = weatherData.desc;
-            } catch (e) {}
-        }
-
-        async function askGemini(type) {
-            const modal = document.getElementById('gemini-modal');
-            const content = document.getElementById('modal-content');
-            modal.style.display = 'flex';
-            content.innerHTML = 'Menganalisis waktu...';
-
-            const prompt = type === 'activity' 
-                ? `Waktu: ${new Date().toLocaleTimeString()}, Cuaca: ${weatherData.desc}, Suhu: ${weatherData.temp}C. Berikan 1 saran kegiatan singkat (Bahasa Indonesia) dengan emoji.`
-                : `Berikan 1 kutipan motivasi pendek Bahasa Indonesia untuk menyemangati hari.`;
-
-            try {
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-                });
-                const data = await res.json();
-                content.innerHTML = data.candidates[0].content.parts[0].text;
-            } catch (err) {
-                content.innerHTML = "Gagal memproses.";
             }
+        });
+
+        const saved = localStorage.getItem('bms_v48_cloud');
+        if(saved) {
+            try {
+                const config = JSON.parse(saved);
+                const app = initializeApp(config);
+                const rtdb = getDatabase(app);
+                firestore = getFirestore(app);
+                document.getElementById('fbInput').value = saved;
+                onValue(ref(rtdb, 'bms_live'), (snap) => { if(snap.val()) updateUI(snap.val()); });
+            } catch(e) { console.error(e); }
+        } else { openCfg(); }
+
+function updateUI(d) {
+// Ambil nilai dari objek data (sesuaikan key-nya dengan index.html)
+    const ahIn = d.cChg || 0;  // Misal d.ahD adalah Design/Full Cap
+    const ahOut = d.cDis || 0; // Misal d.cDis adalah Total Discharge
+
+    // Jalankan kalkulasi
+    updateTimeRemaining(ahIn, ahOut);
+            // Mapping sesuai data index.html - SUDAH DIPERBAIKI
+update('soc', Math.round(d.soc || 0));
+update('current', (d.a || 0).toFixed(1));
+update('power', (d.p || 0).toFixed(0));
+update('vTotal', (d.v || 0).toFixed(2) + 'V');
+
+// Voltase Sel
+update('v1', (d.v1 || 0).toFixed(3)); 
+update('v2', (d.v2 || 0).toFixed(3));
+update('v3', (d.v3 || 0).toFixed(3)); 
+update('v4', (d.v4 || 0).toFixed(3));
+
+// Energy Management (Wh dan Ah)
+update('whDesign', (d.whD || 0).toFixed(0)); 
+update('whNow', (d.whN || 0).toFixed(0)); 
+update('ahDesign', (d.ahD || 0).toFixed(1)); 
+update('ahNow', (d.ahN || 0).toFixed(1));
+
+// Statistik Akumulasi
+update('whPos', (d.wP || 0).toFixed(1)); 
+update('whNeg', (d.wN || 0).toFixed(1));
+update('cycles', (d.cyc || 0)); 
+update('soh', (d.soh || 0).toFixed(1) + '%');
+
+// Kapasitas dan Intensitas Penggunaan
+update('capChg', (d.cChg || 0).toFixed(1)); 
+update('capDis', (d.cDis || 0).toFixed(1));
+update('usagePer', (d.uP || 0).toFixed(1) + '%');
+
+// Temperatur
+update('tBatt', (d.tB || 0).toFixed(1) + '°C');
+update('tMos', (d.tM || 0).toFixed(1) + '°C');
+
+            const offset = 691 - (691 * (d.soc || 0) / 100);
+            document.getElementById('socCircle').style.strokeDashoffset = offset;
+            document.getElementById('rChg').style.opacity = d.rC > 0.5 ? "1" : "0.2";
+            document.getElementById('rDis').style.opacity = d.rD > 0.5 ? "1" : "0.2";
+
+// Gabungkan semua status untuk mendeteksi perubahan snapshot
+const currentSnapshot = `${d.e1}-${d.e2}-${d.e3}-${d.e4}-${d.e5}-${d.err}`;
+
+if (currentSnapshot !== lastErrorCode) {
+    const historyBox = document.getElementById('securityHistory');
+    if(historyBox && historyBox.innerHTML.includes("Waiting")) historyBox.innerHTML = "";
+
+    let activeErrors = [];
+    
+    // 1. Cek e1 sampai e5 (Error Spesifik)
+    ['e1', 'e2', 'e3', 'e4', 'e5'].forEach(key => {
+        const val = d[key];
+        if (val > 0) {
+            // Mengambil keterangan dari dictionary sesuai nilai e1-e5
+            activeErrors.push(errorDict[val] || `Error ${key.toUpperCase()}: ${val}`);
+        }
+    });
+
+    // 2. Cek d.err (Status Utama)
+    // Jika ada nilai di d.err, ambil keterangannya dari errorDict
+    if (d.err > 0) {
+        const mainErrTxt = errorDict[d.err] || `System Error: ${d.err}`;
+        // Masukkan ke paling atas daftar jika belum ada (mencegah duplikasi pesan)
+        if (!activeErrors.includes(mainErrTxt)) {
+            activeErrors.unshift(mainErrTxt); 
+        }
+    }
+
+    // 3. Jika semuanya 0, maka Normal Operation
+    if (activeErrors.length === 0) {
+        activeErrors.push(errorDict[0]); // "Normal Operation"
+    }
+
+    // 4. Render ke UI
+    const entry = document.createElement('div');
+    entry.className = "history-entry mb-2 border-b border-white/5 pb-2 animate-pulse";
+    
+    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const isSystemError = d.err > 0 || (d.e1>0||d.e2>0||d.e3>0||d.e4>0||d.e5>0);
+
+    entry.innerHTML = `
+        <div class="flex justify-between items-start">
+            <span class="text-[9px] text-slate-500 font-mono">${timeStr}</span>
+            <div class="text-right">
+                ${activeErrors.map(errText => `
+                    <p class="text-[10px] ${isSystemError ? 'text-red-400' : 'text-emerald-400'} font-medium leading-tight">
+                        ${errText}
+                    </p>
+                `).join('')}
+            </div>
+        </div>
+    `;
+
+    if(historyBox) {
+        historyBox.prepend(entry);
+        // Hapus animasi pulse setelah 3 detik agar tidak mengganggu
+        setTimeout(() => entry.classList.remove('animate-pulse'), 3000);
+        // Batasi log maksimal 20
+        if(historyBox.children.length > 20) historyBox.lastElementChild.remove();
+    }
+
+    lastErrorCode = currentSnapshot;
+
+    // 5. Update Visual Kartu Utama
+    const card = document.getElementById('errorCard');
+    const errTextElement = document.getElementById('errText');
+    const statusDot = document.getElementById('statusDot');
+
+    if (card && errTextElement) {
+        if (isSystemError) {
+            card.className = "glass-panel p-6 md:col-span-8 border-l-4 border-red-500 flex flex-col gap-4";
+            errTextElement.innerText = "System Warning";
+            errTextElement.classList.remove('text-emerald-500');
+            errTextElement.classList.add('text-red-500');
+            statusDot.classList.replace('bg-emerald-500', 'bg-red-500');
+        } else {
+            card.className = "glass-panel p-6 md:col-span-8 border-l-4 border-emerald-500 flex flex-col gap-4";
+            errTextElement.innerText = "System Secure";
+            errTextElement.classList.remove('text-red-500');
+            errTextElement.classList.add('text-emerald-500');
+            statusDot.classList.replace('bg-red-500', 'bg-emerald-500');
+        }
+    }
+}
+
+            if(d.ts) {
+                document.getElementById('lastUpdate').innerText = new Date(d.ts).toLocaleTimeString();
+                
+                // Simpan ke Dexie lokal
+                db.history.add({
+                    ts: d.ts,
+                    w: d.p || 0,
+                    v: d.v || 0,
+                    a: d.a || 0,
+                    t: d.tM || 0
+                });
+            }
+
+  if(liveMode) {
+    // Menghapus data lama jika lebih dari 50 poin
+    if(unifiedChart.data.labels.length > 50) {
+        unifiedChart.data.labels.shift();
+        unifiedChart.data.datasets.forEach(ds => ds.data.shift());
+    }
+
+    // Menambahkan data baru
+    unifiedChart.data.labels.push(""); 
+    unifiedChart.data.datasets[0].data.push(d.p || 0);    // Watt -> Index 0
+    unifiedChart.data.datasets[1].data.push(d.v || 0);    // Volt -> Index 1
+    unifiedChart.data.datasets[2].data.push(d.a || 0);    // Amp  -> Index 2
+    unifiedChart.data.datasets[3].data.push(d.tM || 0);   // Temp Mosfet -> Index 3
+    unifiedChart.data.datasets[4].data.push(d.tB || 0);   // Temp Battery -> Index 4
+
+    // Update grafik tanpa animasi (agar ringan)
+    unifiedChart.update('none');
+}
         }
 
-        function closeModal() { document.getElementById('gemini-modal').style.display = 'none'; }
+window.handleDurationChange = async () => {
+    const mode = document.getElementById('chartDuration').value;
+    const progressContainer = document.getElementById('progressContainer');
+    const progressBar = document.getElementById('syncProgressBar');
+    const updateLabel = document.getElementById('lastUpdate');
 
-        initNumbers();
-        setInterval(update, 1000);
-        update();
-        fetchWeather();
-        setInterval(fetchWeather, 900000);
+    if (mode === 'live') {
+        liveMode = true;
+        unifiedChart.data.labels = [];
+        unifiedChart.data.datasets.forEach(ds => ds.data = []);
+        unifiedChart.update();
+        progressContainer.classList.add('hidden');
+        return;
+    }
+
+    liveMode = false;
+    progressContainer.classList.remove('hidden');
+    progressBar.style.width = '10%';
+    updateLabel.innerText = "Syncing Local...";
+
+    const now = Date.now();
+    let start;
+    if (mode === '12h') start = now - (12*3600000);
+    else if (mode === '24h') start = now - (24*3600000);
+    else if (mode === '7d') start = now - (7*86400000);
+
+    try {
+        progressBar.style.width = '40%';
+        
+        // Bersihkan data lama di Dexie (opsional, agar db tidak bengkak)
+        const oldDataThreshold = now - (14 * 86400000); // hapus yang lebih dari 14 hari
+        await db.history.where('ts').below(oldDataThreshold).delete();
+        
+        progressBar.style.width = '90%';
+        
+        const allData = await db.history.where('ts').aboveOrEqual(start).toArray();
+
+        // Optimasi: Map data dari database lokal ke grafik
+        unifiedChart.data.labels = allData.map(d => new Date(d.ts).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}));
+        unifiedChart.data.datasets[0].data = allData.map(d => d.w);
+        unifiedChart.data.datasets[1].data = allData.map(d => d.v);
+        unifiedChart.data.datasets[2].data = allData.map(d => d.a);
+        unifiedChart.data.datasets[3].data = allData.map(d => d.t);
+
+        unifiedChart.update('none');
+        
+        progressBar.style.width = '100%';
+        updateLabel.innerText = `${allData.length} Pts Loaded`;
+        
+        setTimeout(() => progressContainer.classList.add('hidden'), 2000);
+
+    } catch (err) {
+        console.error(err);
+        updateLabel.innerText = "Sync Error";
+    }
+};
+
+        function update(id, v) { const e = document.getElementById(id); if(e) e.innerText = v; }
+        window.openCfg = () => document.getElementById('configModal').style.display = 'flex';
+        window.closeCfg = () => document.getElementById('configModal').style.display = 'none';
+        window.saveCfg = () => { localStorage.setItem('bms_v48_cloud', document.getElementById('fbInput').value); location.reload(); };
     </script>
 </body>
 </html>
