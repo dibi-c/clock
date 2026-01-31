@@ -236,6 +236,60 @@
     </div>
 
 
+
+
+<script>
+  // --- 1. PENGECEKAN MANIFEST ---
+  const manifestLink = document.getElementById('my-manifest');
+
+  // Cek apakah file manifest.json bisa diakses
+  fetch(manifestLink.href)
+    .then(response => {
+      if (response.ok) {
+        console.log("✅ Manifest ditemukan: File manifest.json berhasil dimuat.");
+      } else {
+        console.error("❌ Manifest Gagal: File tidak ditemukan (404). Pastikan nama file dan folder sudah benar.");
+      }
+    })
+    .catch(err => {
+      console.error("❌ Manifest Gagal: Terjadi kesalahan jaringan atau masalah CORS.", err);
+    });
+
+  // --- 2. PENGECEKAN SERVICE WORKER ---
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js')
+      .then((reg) => {
+        console.log("✅ Service Worker: Terdaftar dengan sukses.");
+      })
+      .catch((err) => {
+        console.error("❌ Service Worker Gagal: Tidak bisa didaftarkan.");
+        
+        // Alasan-alasan kegagalan Service Worker & Manifest
+        if (window.location.protocol === 'file:') {
+          console.error("👉 ALASAN: Anda membuka file secara langsung (file:///), bukan lewat Server/Hosting.");
+        } else if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+          console.error("👉 ALASAN: PWA mewajibkan HTTPS. GitHub Pages sudah HTTPS, pastikan Anda membukanya lewat link tersebut.");
+        } else {
+          console.error("👉 ALASAN: File 'sw.js' mungkin tidak ada di folder, atau ada kesalahan penulisan kode di dalamnya.");
+        }
+      });
+  }
+
+  // --- 3. PENGECEKAN SYARAT INSTALASI (PWA CRITERIA) ---
+  window.addEventListener('beforeinstallprompt', (e) => {
+    console.log("🚀 SIAP INSTAL: Browser mengonfirmasi Manifest & SW sudah memenuhi syarat aplikasi!");
+  });
+
+  // Jika setelah 3 detik event install tidak muncul, beri peringatan kemungkinan penyebabnya
+  setTimeout(() => {
+    if (!window.isAppInstallable) { // Variabel indikator buatan sendiri
+      console.log("ℹ️ Tips: Jika tombol install belum muncul, cek tab 'Application' > 'Manifest' di Inspect Element untuk melihat error spesifik dari Chrome.");
+    }
+  }, 3000);
+</script>
+
+
+    
 <script>
     function openCfg() {
         document.getElementById('configModal').style.display = 'flex';
