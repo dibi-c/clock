@@ -412,65 +412,68 @@
         let firestore = null;
         let liveMode = true;
         let lastErrorCode = -1;
+
+        
 async function syncFromRTDB(rtdb) {
     const updateLabel = document.getElementById('lastUpdate');
     const progressContainer = document.getElementById('progressContainer');
     const progressBar = document.getElementById('syncProgressBar');
     const percentLabel = document.getElementById('syncPercent');
 
-    updateLabel.innerText = "Downloading Cloud...";
+    updateLabel.innerText = "Requesting Data...";
     progressContainer.classList.remove('hidden');
     percentLabel.classList.remove('hidden');
-    progressBar.style.width = '0%';
-    percentLabel.innerText = '0%';
 
     try {
+        // Gunakan limit yang lebih masuk akal dulu untuk testing, misal 10.000
         const historyRef = ref(rtdb, 'bms_history');
-        const recentQuery = rtdbQuery(historyRef, limitToLast(604800)); // Sesuaikan limit sesuai kebutuhan
+        const recentQuery = rtdbQuery(historyRef, limitToLast(50000)); 
         const snapshot = await get(recentQuery);
 
         if (snapshot.exists()) {
-            const cloudData = [];
-            const totalData = snapshot.size; // Mendapatkan total jumlah data dari Firebase
+            const totalData = snapshot.size;
             let processed = 0;
+            const cloudData = [];
+
+            updateLabel.innerText = `Processing ${totalData.toLocaleString()} pts...`;
 
             snapshot.forEach((child) => {
                 const d = child.val();
                 cloudData.push({
                     ts: d.ts,
-                    w: Number((d.p || 0).toFixed(2)), // Langsung simpan 2 desimal agar hemat storage
+                    w: Number((d.p || 0).toFixed(2)), // Pastikan 2 desimal
                     v: Number((d.v || 0).toFixed(2)),
                     a: Number((d.a || 0).toFixed(2)),
                     t: Number((d.tM || 0).toFixed(2)),
                     tb: Number((d.tB || 0).toFixed(2))
                 });
 
-                // Update Progress per data
                 processed++;
-                const currentPercent = Math.round((processed / totalData) * 100);
                 
-                // Update UI setiap 10% agar tidak memberatkan browser
-                if (processed % 10 === 0 || processed === totalData) {
+                // Update UI setiap 500 data agar tidak lambat karena render DOM
+                if (processed % 500 === 0 || processed === totalData) {
+                    const currentPercent = Math.round((processed / totalData) * 100);
                     progressBar.style.width = currentPercent + '%';
                     percentLabel.innerText = currentPercent + '%';
                 }
             });
 
-            updateLabel.innerText = "Saving to Local...";
-            await db.history.bulkPut(cloudData); // Simpan massal ke Dexie
+            updateLabel.innerText = "Writing to Disk...";
+            await db.history.bulkPut(cloudData); //
             
-            updateLabel.innerText = "Cloud Synced";
-            document.getElementById('chartDuration').value = '12h';
+            updateLabel.innerText = "Success: " + totalData + " pts";
             window.handleDurationChange();
+        } else {
+            updateLabel.innerText = "No Data Found";
         }
     } catch (err) {
         console.error("Sync Error:", err);
-        updateLabel.innerText = "Sync Failed";
+        updateLabel.innerText = "Memory Overflow / Timeout";
     } finally {
         setTimeout(() => {
             progressContainer.classList.add('hidden');
             percentLabel.classList.add('hidden');
-        }, 3000);
+        }, 5000);
     }
 }
 
