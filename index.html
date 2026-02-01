@@ -418,7 +418,7 @@ async function syncFromRTDB(rtdb) {
         // Ambil 1000 data terakhir dari node 'bms_history'
         // Sesuaikan nama 'bms_history' dengan nama node di Firebase Anda
         const historyRef = ref(rtdb, 'bms_history');
-        const recentQuery = rtdbQuery(historyRef, limitToLast(1000));
+        const recentQuery = rtdbQuery(historyRef, limitToLast(1000000));
         const snapshot = await get(recentQuery);
 
         if (snapshot.exists()) {
