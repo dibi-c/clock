@@ -699,9 +699,9 @@ if (currentSnapshot !== lastErrorCode) {
         unifiedChart.data.datasets.forEach(ds => ds.data.shift());
     }
     unifiedChart.data.labels.push(""); 
-    unifiedChart.data.datasets[0].data.push(Number((d.p || 0).toFixed(2)));
+    unifiedChart.data.datasets[0].data.push(Number((d.p || 0).toFixed(1)));
     unifiedChart.data.datasets[1].data.push(Number((d.v || 0).toFixed(2)));
-    unifiedChart.data.datasets[2].data.push(Number((d.a || 0).toFixed(2)));
+    unifiedChart.data.datasets[2].data.push(Number((d.a || 0).toFixed(1)));
     unifiedChart.data.datasets[3].data.push(Number((d.tM || 0).toFixed(2)));
     unifiedChart.data.datasets[4].data.push(Number((d.tB || 0).toFixed(2)));
     unifiedChart.update('none');
@@ -743,7 +743,7 @@ window.handleDurationChange = async () => {
         unifiedChart.data.labels = allData.map(d => new Date(d.ts).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}));
         unifiedChart.data.datasets[0].data = allData.map(d => Number((d.w || 0).toFixed(1)));
         unifiedChart.data.datasets[1].data = allData.map(d => Number((d.v || 0).toFixed(2)));
-        unifiedChart.data.datasets[2].data = allData.map(d => Number((d.a || 0).toFixed(1));
+        unifiedChart.data.datasets[2].data = allData.map(d => Number((d.a || 0).toFixed(1)));
         unifiedChart.data.datasets[3].data = allData.map(d => Number((d.t || 0).toFixed(2)));
         unifiedChart.data.datasets[4].data = allData.map(d => Number((d.tb || 0).toFixed(2)));
         unifiedChart.update('none');
