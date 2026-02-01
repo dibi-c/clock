@@ -716,6 +716,7 @@ window.handleDurationChange = async () => {
         unifiedChart.data.datasets[1].data = allData.map(d => d.v);
         unifiedChart.data.datasets[2].data = allData.map(d => d.a);
         unifiedChart.data.datasets[3].data = allData.map(d => d.t);
+        unifiedChart.data.datasets[4].data = allData.map(d => d.tb); // <--- TAMBAHKAN INI (Mapping ke T-Batt)
         unifiedChart.update('none');
         progressBar.style.width = '100%';
         updateLabel.innerText = `${allData.length} Pts Loaded`;
