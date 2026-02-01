@@ -393,7 +393,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
+        import { getDatabase, ref, onValue, query as rtdbQuery, limitToLast, get } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
         import { getFirestore, collection, query, where, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
         const db = new Dexie("BMS_History_DB");
@@ -404,6 +404,55 @@
         let firestore = null;
         let liveMode = true;
         let lastErrorCode = -1;
+
+async function syncFromRTDB(rtdb) {
+    const updateLabel = document.getElementById('lastUpdate');
+    const progressContainer = document.getElementById('progressContainer');
+    const progressBar = document.getElementById('syncProgressBar');
+
+    updateLabel.innerText = "Downloading Cloud...";
+    progressContainer.classList.remove('hidden');
+    progressBar.style.width = '20%';
+
+    try {
+        // Ambil 1000 data terakhir dari node 'bms_history'
+        // Sesuaikan nama 'bms_history' dengan nama node di Firebase Anda
+        const historyRef = ref(rtdb, 'bms_history');
+        const recentQuery = rtdbQuery(historyRef, limitToLast(1000));
+        const snapshot = await get(recentQuery);
+
+        if (snapshot.exists()) {
+            const cloudData = [];
+            snapshot.forEach((child) => {
+                const d = child.val();
+                cloudData.push({
+                    ts: d.ts,
+                    w: d.p || 0,
+                    v: d.v || 0,
+                    a: d.a || 0,
+                    t: d.tM || 0, // Mosfet
+                    tb: d.tB || 0 // Battery
+                });
+            });
+
+            progressBar.style.width = '60%';
+            // Simpan massal ke Dexie
+            await db.history.bulkPut(cloudData);
+            
+            progressBar.style.width = '100%';
+            updateLabel.innerText = "Cloud Synced";
+            
+            // Otomatis pindah ke tampilan 12 jam agar grafik langsung muncul
+            document.getElementById('chartDuration').value = '12h';
+            window.handleDurationChange();
+        }
+    } catch (err) {
+        console.error("Sync Error:", err);
+        updateLabel.innerText = "Sync Failed";
+    } finally {
+        setTimeout(() => progressContainer.classList.add('hidden'), 2000);
+    }
+}
 
 function updateTimeRemaining(ahIn, ahOut) {
     const timeRemainingElement = document.getElementById('time-remaining-value');
@@ -483,18 +532,31 @@ function formatTime(hours) {
                 }
             }
         });
+        
+ const saved = localStorage.getItem('bms_v48_cloud');
+if(saved) {
+    try {
+        const config = JSON.parse(saved);
+        const app = initializeApp(config);
+        const rtdb = getDatabase(app);
+        firestore = getFirestore(app);
+        document.getElementById('fbInput').value = saved;
 
-        const saved = localStorage.getItem('bms_v48_cloud');
-        if(saved) {
-            try {
-                const config = JSON.parse(saved);
-                const app = initializeApp(config);
-                const rtdb = getDatabase(app);
-                firestore = getFirestore(app);
-                document.getElementById('fbInput').value = saved;
-                onValue(ref(rtdb, 'bms_live'), (snap) => { if(snap.val()) updateUI(snap.val()); });
-            } catch(e) { console.error(e); }
-        } else { openCfg(); }
+        // --- BAGIAN PENGECEKAN DATA KOSONG ---
+        const checkAndSync = async () => {
+            const localCount = await db.history.count();
+            if (localCount < 5) { // Jika data lokal < 5 poin, download dari cloud
+                await syncFromRTDB(rtdb);
+            }
+        };
+        checkAndSync();
+        // -------------------------------------
+
+        onValue(ref(rtdb, 'bms_live'), (snap) => { 
+            if(snap.val()) updateUI(snap.val()); 
+        });
+    } catch(e) { console.error(e); }
+} else { openCfg(); }
 
 function updateUI(d) {
     const ahIn = d.cChg || 0;
