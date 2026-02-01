@@ -126,14 +126,11 @@
 
 
             <div class="flex items-center gap-4">
-                <div id="progressContainer" class="hidden w-32 h-1 bg-white/5 rounded-full overflow-hidden mr-4">
-                    <div id="syncProgressBar" class="h-full bg-amber-500 transition-all duration-300" style="width: 0%"></div>
-                </div>
-
                 <div id="syncBadge" class="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full border border-white/10">
                     <div id="statusPulse" class="h-2 w-2 rounded-full bg-amber-500 animate-pulse"></div>
                     <span class="label-tech text-white" id="lastUpdate">Connecting Cloud...</span>
                 </div>
+
                 <button onclick="openCfg()" class="p-3 bg-white/5 hover:bg-white/10 rounded-2xl transition-all">⚙️</button>
             </div>
         </nav>
@@ -218,26 +215,33 @@
                 </div>
 
                 <div class="glass-panel p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <div class="flex flex-col gap-1">
-                            <span class="label-tech">Data Stream Analytics</span>
-                            <div class="flex gap-4 text-[7px] font-bold">
-                               <span class="text-blue-500">● LOAD (W)</span> 
-    <span class="text-emerald-500">● VOLTAGE (V)</span> 
-    <span class="text-orange-500">● CURRENT (A)</span> 
-    <span class="text-red-500">● TEMP MOSFET</span>
-    <span class="text-yellow-500">● TEMP BATT</span>
-                            </div>
-                        </div>
-                        <select id="chartDuration" onchange="window.handleDurationChange()" class="bg-black/50 border border-white/10 rounded-lg px-2 py-1 text-[10px] label-tech text-white outline-none">
-                            <option value="live">Live Stream</option>
-                            <option value="12h">Last 12 Hours</option>
-                            <option value="24h">Last 24 Hours</option>
-                            <option value="7d">Last 7 Days</option>
-                        </select>
-                    </div>
-                    <div class="h-[280px]"><canvas id="unifiedChart"></canvas></div>
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <div class="flex flex-col gap-1">
+            <span class="label-tech">Advanced Data Analytics</span>
+            <div id="chartFilters" class="flex flex-wrap gap-2 mt-2">
+                <button onclick="toggleDataset(0)" id="btn-0" class="px-3 py-1 rounded-full border border-blue-500/50 bg-blue-500/20 text-[8px] font-bold text-blue-400 transition-all">LOAD (W)</button>
+                <button onclick="toggleDataset(1)" id="btn-1" class="px-3 py-1 rounded-full border border-emerald-500/50 bg-emerald-500/20 text-[8px] font-bold text-emerald-400 transition-all">VOLT (V)</button>
+                <button onclick="toggleDataset(2)" id="btn-2" class="px-3 py-1 rounded-full border border-orange-500/50 bg-orange-500/20 text-[8px] font-bold text-orange-400 transition-all">AMP (A)</button>
+                <button onclick="toggleDataset(3)" id="btn-3" class="px-3 py-1 rounded-full border border-red-500/50 bg-red-500/20 text-[8px] font-bold text-red-400 transition-all">T-MOS</button>
+                <button onclick="toggleDataset(4)" id="btn-4" class="px-3 py-1 rounded-full border border-yellow-500/50 bg-yellow-500/20 text-[8px] font-bold text-yellow-400 transition-all">T-BATT</button>
+            </div>
+        </div>
+
+
+<div id="progressContainer" class="hidden w-32 h-1 bg-white/5 rounded-full overflow-hidden mr-4">
+                    <div id="syncProgressBar" class="h-full bg-amber-500 transition-all duration-300" style="width: 0%"></div>
                 </div>
+        <select id="chartDuration" onchange="window.handleDurationChange()" class="bg-black/50 border border-white/10 rounded-lg px-2 py-1 text-[10px] label-tech text-white outline-none">
+            <option value="live">Live Stream</option>
+            <option value="12h">Last 12 Hours</option>
+            <option value="24h">Last 24 Hours</option>
+            <option value="7d">Last 7 Days</option>
+        </select>
+    </div>
+    <div class="h-[320px] relative">
+        <canvas id="unifiedChart"></canvas>
+    </div>
+</div>
 
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
                     <div id="errorCard" class="glass-panel p-6 md:col-span-8 border-l-4 border-emerald-500 flex flex-col gap-4">
@@ -509,29 +513,54 @@ function formatTime(hours) {
             11: "Load Overload"
         };
 
-        const ctx = document.getElementById('unifiedChart').getContext('2d');
-        const unifiedChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: [],
-   datasets: [
-    { label: 'Watt', data: [], borderColor: '#3b82f6', borderWidth: 2, tension: 0.4, pointRadius: 0, yAxisID: 'y' },
-    { label: 'Volt', data: [], borderColor: '#10b981', borderWidth: 2, tension: 0.4, pointRadius: 0, yAxisID: 'y' },
-    { label: 'Amp', data: [], borderColor: '#f59e0b', borderWidth: 1.5, tension: 0.4, pointRadius: 0, yAxisID: 'y1' },
-    { label: 'T-Mos', data: [], borderColor: '#ef4444', borderWidth: 1, borderDash: [5, 5], tension: 0.4, pointRadius: 0, yAxisID: 'y1' },
-    { label: 'T-Batt', data: [], borderColor: '#eab308', borderWidth: 1, borderDash: [5, 5], tension: 0.4, pointRadius: 0, yAxisID: 'y1' }
-]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { 
-                    x: { display: false }, 
-                    y: { position: 'left', grid: { color: 'rgba(255,255,255,0.02)' }, ticks: { color: '#475569', font: { size: 9 } } },
-                    y1: { position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#64748b', font: { size: 8 } } }
-                }
-            }
-        });
+
+// Fungsi untuk mematikan/menghidupkan garis grafik
+window.toggleDataset = (index) => {
+    const meta = unifiedChart.getDatasetMeta(index);
+    const btn = document.getElementById(`btn-${index}`);
+    
+    // Toggle visibilitas
+    meta.hidden = meta.hidden === null ? !unifiedChart.data.datasets[index].hidden : null;
+    
+    // Update tampilan tombol
+    if (meta.hidden) {
+        btn.classList.add('opacity-30', 'grayscale');
+        btn.classList.remove('bg-opacity-20');
+    } else {
+        btn.classList.remove('opacity-30', 'grayscale');
+    }
+    
+    unifiedChart.update();
+};
+
+ // Update pada bagian Inisialisasi Chart (tambahkan Y-Axis ganda agar skala pas)
+const ctx = document.getElementById('unifiedChart').getContext('2d');
+const unifiedChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: [],
+        datasets: [
+            { label: 'Watt', data: [], borderColor: '#3b82f6', borderWidth: 2, tension: 0.4, pointRadius: 0, yAxisID: 'yPower' },
+            { label: 'Volt', data: [], borderColor: '#10b981', borderWidth: 2, tension: 0.4, pointRadius: 0, yAxisID: 'yVolt' },
+            { label: 'Amp', data: [], borderColor: '#f59e0b', borderWidth: 1.5, tension: 0.4, pointRadius: 0, yAxisID: 'yAmp' },
+            { label: 'T-Mos', data: [], borderColor: '#ef4444', borderWidth: 1, borderDash: [5, 5], tension: 0.4, pointRadius: 0, yAxisID: 'yTemp' },
+            { label: 'T-Batt', data: [], borderColor: '#eab308', borderWidth: 1, borderDash: [5, 5], tension: 0.4, pointRadius: 0, yAxisID: 'yTemp' }
+        ]
+    },
+    options: {
+        responsive: true, 
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false }, // Agar hover membaca semua data
+        plugins: { legend: { display: false } },
+        scales: { 
+            x: { display: false }, 
+            yPower: { type: 'linear', position: 'left', display: false }, // Disembunyikan agar bersih
+            yVolt: { type: 'linear', position: 'right', display: false },
+            yAmp: { type: 'linear', position: 'right', display: false },
+            yTemp: { type: 'linear', position: 'right', display: false }
+        }
+    }
+});
         
  const saved = localStorage.getItem('bms_v48_cloud');
 if(saved) {
@@ -716,7 +745,7 @@ window.handleDurationChange = async () => {
         unifiedChart.data.datasets[1].data = allData.map(d => d.v);
         unifiedChart.data.datasets[2].data = allData.map(d => d.a);
         unifiedChart.data.datasets[3].data = allData.map(d => d.t);
-        unifiedChart.data.datasets[4].data = allData.map(d => d.tb); // <--- TAMBAHKAN INI (Mapping ke T-Batt)
+        unifiedChart.data.datasets[4].data = allData.map(d => d.tb);
         unifiedChart.update('none');
         progressBar.style.width = '100%';
         updateLabel.innerText = `${allData.length} Pts Loaded`;
