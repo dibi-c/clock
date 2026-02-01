@@ -398,7 +398,7 @@
 
         const db = new Dexie("BMS_History_DB");
         db.version(1).stores({
-            history: '++id, ts, w, v, a, t'
+            history: '++id, ts, w, v, a, t, tb'
         });
 
         let firestore = null;
@@ -661,7 +661,7 @@ if (currentSnapshot !== lastErrorCode) {
 
             if(d.ts) {
                 document.getElementById('lastUpdate').innerText = new Date(d.ts).toLocaleTimeString();
-                db.history.add({ ts: d.ts, w: d.p || 0, v: d.v || 0, a: d.a || 0, t: d.tM || 0 });
+                db.history.add({ ts: d.ts, w: d.p || 0, v: d.v || 0, a: d.a || 0, t: d.tM || 0, tb: d.tB || 0 });
             }
 
   if(liveMode) {
