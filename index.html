@@ -7,8 +7,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
      <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
-
+<link href="https://fonts.cdnfonts.com/css/bauhaus-93" rel="stylesheet">
 <link rel="manifest" id="my-manifest" href="manifest.json">
+
 <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
 <script>eruda.init();</script>
 
@@ -52,19 +53,78 @@
 
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(20px); }
         .history-entry { font-family: 'JetBrains Mono', monospace; font-size: 10px; border-bottom: 1px solid rgba(255,255,255,0.03); padding: 4px 0; }
+        
+        /* Tirai Log Style */
+        #historyContent { transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease; overflow: hidden; }
+        #historyContent.collapsed { max-height: 0; opacity: 0; pointer-events: none; }
+        #historyContent.expanded { max-height: 400px; opacity: 1; }
+
+
+/* --- STYLE LOGO MODERN --- */
+    .logo-container {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .dibi-box {
+        height: 3.5rem;
+        width: 3.5rem;
+        background: linear-gradient(135deg, #ffbd44 0%, #ff8900 100%);
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 20px rgba(255, 158, 11, 0.4);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .dibi-box::after {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; height: 50%;
+        background: linear-gradient(to bottom, rgba(255,255,255,0.3) 0%, transparent 100%);
+    }
+
+    .dibi-text {
+        font-family: 'Bauhaus 93', 'Arial Round', sans-serif;
+        font-size: 1.5rem;
+        color: #000;
+        letter-spacing: -1px;
+        font-weight: bold;
+    }
+
+    .core-remote-text {
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 700;
+        font-size: 1.8rem;
+        line-height: 1;
+        letter-spacing: -0.02em;
+        color: #ffffff;
+    }
+
+    .dot-orange { color: #f59e0b; }
+        /* -------------------------- */
+
+
     </style>
 </head>
 <body class="p-4 md:p-8">
 
     <div class="max-w-[1600px] mx-auto">
         <nav class="flex justify-between items-center mb-8">
-            <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-amber-500 rounded-2xl flex items-center justify-center font-bold text-black text-2xl">C</div>
-                <div>
-                    <h1 class="text-2xl font-bold tracking-tighter leading-none">CORE<span class="text-amber-500">.</span>REMOTE</h1>
-                    <p class="label-tech">Decade Terminal v5.1 - Analytics Engine</p>
-                </div>
-            </div>
+    <div class="logo-container">
+        <div class="dibi-box">
+            <span class="dibi-text">dibi</span>
+        </div>
+        <div>
+            <h1 class="core-remote-text">CORE<span class="dot-orange">.</span>REMOTE</h1>
+            <p class="label-tech">Decade Terminal v5.1 - Analytics Engine</p>
+        </div>
+    </div>
+
+
             <div class="flex items-center gap-4">
                 <div id="progressContainer" class="hidden w-32 h-1 bg-white/5 rounded-full overflow-hidden mr-4">
                     <div id="syncProgressBar" class="h-full bg-amber-500 transition-all duration-300" style="width: 0%"></div>
@@ -181,17 +241,22 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
                     <div id="errorCard" class="glass-panel p-6 md:col-span-8 border-l-4 border-emerald-500 flex flex-col gap-4">
-                        <div class="flex items-center gap-4">
-                            <div id="statusDot" class="h-4 w-4 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981]"></div>
-                            <div>
-                                <p class="label-tech">Security Status</p>
-                                <h3 id="errText" class="big-number text-lg uppercase text-emerald-500 leading-tight">System Secure</h3>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-4">
+                                <div id="statusDot" class="h-4 w-4 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981]"></div>
+                                <div>
+                                    <p class="label-tech">Security Status</p>
+                                    <h3 id="errText" class="big-number text-lg uppercase text-emerald-500 leading-tight">System Secure</h3>
+                                </div>
                             </div>
+                            <button onclick="toggleLog()" class="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl border border-white/10 transition-all">
+                                <span id="logBtnLabel" class="label-tech !text-[8px] text-white">Buka Tirai Log</span>
+                            </button>
                         </div>
-                        <div class="border-t border-white/5 pt-4">
-                            <p class="label-tech !text-[7px] mb-2">Event History</p>
-                            <div id="securityHistory" class="max-h-24 overflow-y-auto pr-2">
-                                <div class="history-entry text-slate-600 italic">Waiting for telemetry...</div>
+                        <div id="historyContent" class="collapsed border-t border-white/5 pt-4">
+                            <p class="label-tech !text-[7px] mb-2">History Peristiwa</p>
+                            <div id="securityHistory" class="max-h-32 overflow-y-auto pr-2">
+                                <div class="history-entry text-slate-600 italic">Menunggu telemetri...</div>
                             </div>
                         </div>
                     </div>
@@ -235,8 +300,6 @@
             <button onclick="closeCfg()" class="w-full mt-3 text-slate-500 label-tech py-2">Cancel</button>
         </div>
     </div>
-
-
 
 
 <script>
@@ -290,7 +353,6 @@
 </script>
 
 
-    
 <script>
     function openCfg() {
         document.getElementById('configModal').style.display = 'flex';
@@ -309,154 +371,84 @@
             alert("Masukkan JSON konfigurasi terlebih dahulu.");
         }
     }
+
+    // Fungsi Toggle Tirai
+    function toggleLog() {
+        const content = document.getElementById('historyContent');
+        const label = document.getElementById('logBtnLabel');
+        if(content.classList.contains('collapsed')) {
+            content.classList.replace('collapsed', 'expanded');
+            label.innerText = "Tutup Tirai Log";
+        } else {
+            content.classList.replace('expanded', 'collapsed');
+            label.innerText = "Buka Tirai Log";
+        }
+    }
     
-    // Pastikan fungsi ini bisa diakses secara global
     window.openCfg = openCfg;
     window.closeCfg = closeCfg;
     window.saveCfg = saveCfg;
+    window.toggleLog = toggleLog;
 </script>
-
-<script type="module">
-    // ... isi kode firebase Anda tetap di sini ...
-    // Hapus bagian window.openCfg yang ada di dalam sini agar tidak bentrok
-</script>
-
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-        import { getDatabase, ref, onValue, query as rtdbQuery, limitToLast, get } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
         import { getFirestore, collection, query, where, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
-        // Initialize Dexie
         const db = new Dexie("BMS_History_DB");
         db.version(1).stores({
-            history: '++id, ts, w, v, a, t, tb'
+            history: '++id, ts, w, v, a, t'
         });
 
         let firestore = null;
         let liveMode = true;
         let lastErrorCode = -1;
 
-
-
-async function syncFromRTDB(rtdb) {
-    const updateLabel = document.getElementById('lastUpdate');
-    const progressContainer = document.getElementById('progressContainer');
-    const progressBar = document.getElementById('syncProgressBar');
-
-    updateLabel.innerText = "Downloading Cloud...";
-    progressContainer.classList.remove('hidden');
-    progressBar.style.width = '20%';
-
-    try {
-        // Ambil 1000 data terakhir dari node 'bms_history'
-        // Sesuaikan nama 'bms_history' dengan nama node di Firebase Anda
-        const historyRef = ref(rtdb, 'bms_history');
-        const recentQuery = rtdbQuery(historyRef, limitToLast(100000));
-        const snapshot = await get(recentQuery);
-
-        if (snapshot.exists()) {
-            const cloudData = [];
-            snapshot.forEach((child) => {
-                const d = child.val();
-                cloudData.push({
-                    ts: d.ts,
-                    w: d.p || 0,
-                    v: d.v || 0,
-                    a: d.a || 0,
-                    t: d.tM || 0, // Mosfet
-                    tb: d.tB || 0 // Battery
-                });
-            });
-
-            progressBar.style.width = '60%';
-            // Simpan massal ke Dexie
-            await db.history.bulkPut(cloudData);
-            
-            progressBar.style.width = '100%';
-            updateLabel.innerText = "Cloud Synced";
-            
-            // Otomatis pindah ke tampilan 12 jam agar grafik langsung muncul
-            document.getElementById('chartDuration').value = '12h';
-            window.handleDurationChange();
-        }
-    } catch (err) {
-        console.error("Sync Error:", err);
-        updateLabel.innerText = "Sync Failed";
-    } finally {
-        setTimeout(() => progressContainer.classList.add('hidden'), 2000);
-    }
-}
-
-/**
- * Fungsi untuk menghitung sisa waktu baterai (TTE/TTF)
- * @param {number} ahIn - Kapasitas penuh / Total Ah masuk (fullCap)
- * @param {number} ahOut - Total Ah keluar (dchgCap)
- */
 function updateTimeRemaining(ahIn, ahOut) {
     const timeRemainingElement = document.getElementById('time-remaining-value');
     if (!timeRemainingElement) return;
 
-    // 1. Ambil data dari UI (Pastikan ID sesuai dengan elemen HTML Anda)
     const currentFromUI = parseFloat(document.getElementById('current').textContent) || 0;
     const capRemFromUI = parseFloat(document.getElementById('ahNow').textContent) || 0;
 
-    // 2. Logika Kapasitas
     let currentRem = currentFromUI;
     let fullCap = ahIn;
     let dchgCap = ahOut;
 
-    // Rumus diff: Hasil 0 jika dchgCap > fullCap
     let diff = Math.max(0, fullCap - dchgCap);
-    
-    // remainingCap adalah kapasitas yang benar-benar bisa digunakan
     let remainingCap = Math.max(0, capRemFromUI - diff);
 
     let timeRemainingText;
-    let timeToEmptyHours = null;
-    let timeToFullHours = null;
 
-    // 3. Penentuan Kondisi Berdasarkan Arus (Current)
     if (Math.abs(currentRem) < 0.1) {
-        // Jika arus sangat kecil (di bawah 0.1A), dianggap Standby/Diam
         timeRemainingText = "Diam";
     } 
     else if (currentRem > 0) {
-        // CHARGING (Menuju Full)
         const capToFull = fullCap - capRemFromUI;
-        // TTF = Sisa kapasitas yang perlu diisi / Arus pengisian
-        timeToFullHours = capToFull > 0 ? capToFull / currentRem : 0;
-        timeRemainingText = formatTime(timeToFullHours) + " (TTF)";
+        const hours = capToFull > 0 ? capToFull / currentRem : 0;
+        timeRemainingText = formatTime(hours) + " (TTF)";
     } 
     else {
-        // DISCHARGING (Menuju Kosong)
-        // TTE = Kapasitas sisa saat ini / Mutlak Arus pemakaian
-        timeToEmptyHours = remainingCap / Math.abs(currentRem);
-        timeRemainingText = formatTime(timeToEmptyHours) + " (TTE)";
+        const hours = remainingCap / Math.abs(currentRem);
+        timeRemainingText = formatTime(hours) + " (TTE)";
     }
 
-    // 4. Update Tampilan UI
     timeRemainingElement.textContent = `Waktu Sisa: ${timeRemainingText}`;
 }
 
-/**
- * Helper untuk memformat jam desimal ke format Jam & Menit
- */
 function formatTime(hours) {
     if (hours === Infinity || isNaN(hours)) return "--";
     if (hours <= 0) return "0m";
-    
     const h = Math.floor(hours);
     const m = Math.round((hours - h) * 60);
-    
-    if (h > 0) return `${h}j ${m}m`;
-    return `${m}m`;
+    return h > 0 ? `${h}j ${m}m` : `${m}m`;
 }
-
 
         const errorDict = {
             0: "Normal Operation",
             1: "Cell Undervoltage",
+            2: "Reserved Status",
             3: "EEPROM Memory Error",
             4: "Thermal Anomaly",
             5: "Activation Failure",
@@ -477,9 +469,7 @@ function formatTime(hours) {
     { label: 'Watt', data: [], borderColor: '#3b82f6', borderWidth: 2, tension: 0.4, pointRadius: 0, yAxisID: 'y' },
     { label: 'Volt', data: [], borderColor: '#10b981', borderWidth: 2, tension: 0.4, pointRadius: 0, yAxisID: 'y' },
     { label: 'Amp', data: [], borderColor: '#f59e0b', borderWidth: 1.5, tension: 0.4, pointRadius: 0, yAxisID: 'y1' },
-    // Index 3: Mosfet (Garis Putus-putus Merah)
     { label: 'T-Mos', data: [], borderColor: '#ef4444', borderWidth: 1, borderDash: [5, 5], tension: 0.4, pointRadius: 0, yAxisID: 'y1' },
-    // Index 4: Battery (Garis Putus-putus Kuning)
     { label: 'T-Batt', data: [], borderColor: '#eab308', borderWidth: 1, borderDash: [5, 5], tension: 0.4, pointRadius: 0, yAxisID: 'y1' }
 ]
             },
@@ -494,68 +484,42 @@ function formatTime(hours) {
             }
         });
 
-  const saved = localStorage.getItem('bms_v48_cloud');
-if(saved) {
-    try {
-        const config = JSON.parse(saved);
-        const app = initializeApp(config);
-        const rtdb = getDatabase(app);
-        firestore = getFirestore(app);
-        document.getElementById('fbInput').value = saved;
-
-        // --- BAGIAN PENGECEKAN DATA KOSONG ---
-        const checkAndSync = async () => {
-            const localCount = await db.history.count();
-            if (localCount < 5) { // Jika data lokal < 5 poin, download dari cloud
-                await syncFromRTDB(rtdb);
-            }
-        };
-        checkAndSync();
-        // -------------------------------------
-
-        onValue(ref(rtdb, 'bms_live'), (snap) => { 
-            if(snap.val()) updateUI(snap.val()); 
-        });
-    } catch(e) { console.error(e); }
-} else { openCfg(); }
+        const saved = localStorage.getItem('bms_v48_cloud');
+        if(saved) {
+            try {
+                const config = JSON.parse(saved);
+                const app = initializeApp(config);
+                const rtdb = getDatabase(app);
+                firestore = getFirestore(app);
+                document.getElementById('fbInput').value = saved;
+                onValue(ref(rtdb, 'bms_live'), (snap) => { if(snap.val()) updateUI(snap.val()); });
+            } catch(e) { console.error(e); }
+        } else { openCfg(); }
 
 function updateUI(d) {
-// Ambil nilai dari objek data (sesuaikan key-nya dengan index.html)
-    const ahIn = d.cChg || 0;  // Misal d.ahD adalah Design/Full Cap
-    const ahOut = d.cDis || 0; // Misal d.cDis adalah Total Discharge
-
-    // Jalankan kalkulasi
+    const ahIn = d.cChg || 0;
+    const ahOut = d.cDis || 0;
     updateTimeRemaining(ahIn, ahOut);
-            // Mapping sesuai data index.html - SUDAH DIPERBAIKI
+
 update('soc', Math.round(d.soc || 0));
 update('current', (d.a || 0).toFixed(1));
 update('power', (d.p || 0).toFixed(0));
 update('vTotal', (d.v || 0).toFixed(2) + 'V');
-
-// Voltase Sel
 update('v1', (d.v1 || 0).toFixed(3)); 
 update('v2', (d.v2 || 0).toFixed(3));
 update('v3', (d.v3 || 0).toFixed(3)); 
 update('v4', (d.v4 || 0).toFixed(3));
-
-// Energy Management (Wh dan Ah)
 update('whDesign', (d.whD || 0).toFixed(0)); 
 update('whNow', (d.whN || 0).toFixed(0)); 
 update('ahDesign', (d.ahD || 0).toFixed(1)); 
 update('ahNow', (d.ahN || 0).toFixed(1));
-
-// Statistik Akumulasi
 update('whPos', (d.wP || 0).toFixed(1)); 
 update('whNeg', (d.wN || 0).toFixed(1));
 update('cycles', (d.cyc || 0)); 
 update('soh', (d.soh || 0).toFixed(1) + '%');
-
-// Kapasitas dan Intensitas Penggunaan
 update('capChg', (d.cChg || 0).toFixed(1)); 
 update('capDis', (d.cDis || 0).toFixed(1));
 update('usagePer', (d.uP || 0).toFixed(1) + '%');
-
-// Temperatur
 update('tBatt', (d.tB || 0).toFixed(1) + '°C');
 update('tMos', (d.tM || 0).toFixed(1) + '°C');
 
@@ -564,53 +528,38 @@ update('tMos', (d.tM || 0).toFixed(1) + '°C');
             document.getElementById('rChg').style.opacity = d.rC > 0.5 ? "1" : "0.2";
             document.getElementById('rDis').style.opacity = d.rD > 0.5 ? "1" : "0.2";
 
-// Gabungkan semua status untuk mendeteksi perubahan snapshot
+// SNAPSHOT UNTUK HISTORY
 const currentSnapshot = `${d.e1}-${d.e2}-${d.e3}-${d.e4}-${d.e5}-${d.err}`;
 
 if (currentSnapshot !== lastErrorCode) {
     const historyBox = document.getElementById('securityHistory');
-    if(historyBox && historyBox.innerHTML.includes("Waiting")) historyBox.innerHTML = "";
+    if(historyBox && historyBox.innerHTML.includes("Menunggu")) historyBox.innerHTML = "";
 
-    let activeErrors = [];
-    
-    // 1. Cek e1 sampai e5 (Error Spesifik)
+    // Kumpulkan semua detail error sensor untuk log
+    let logMessages = [];
     ['e1', 'e2', 'e3', 'e4', 'e5'].forEach(key => {
-        const val = d[key];
-        if (val > 0) {
-            // Mengambil keterangan dari dictionary sesuai nilai e1-e5
-            activeErrors.push(errorDict[val] || `Error ${key.toUpperCase()}: ${val}`);
-        }
+        if (d[key] > 0) logMessages.push(errorDict[d[key]] || `Sensor ${key.toUpperCase()}: ${d[key]}`);
     });
 
-    // 2. Cek d.err (Status Utama)
-    // Jika ada nilai di d.err, ambil keterangannya dari errorDict
-    if (d.err > 0) {
-        const mainErrTxt = errorDict[d.err] || `System Error: ${d.err}`;
-        // Masukkan ke paling atas daftar jika belum ada (mencegah duplikasi pesan)
-        if (!activeErrors.includes(mainErrTxt)) {
-            activeErrors.unshift(mainErrTxt); 
-        }
-    }
+    // Pesan utama dari d.err
+    const mainErrText = errorDict[d.err] || (d.err > 0 ? `System Error: ${d.err}` : "Normal Operation");
+    if (!logMessages.includes(mainErrText)) logMessages.unshift(mainErrText);
 
-    // 3. Jika semuanya 0, maka Normal Operation
-    if (activeErrors.length === 0) {
-        activeErrors.push(errorDict[0]); // "Normal Operation"
-    }
-
-    // 4. Render ke UI
+    // Tambah baris baru ke History Log
     const entry = document.createElement('div');
     entry.className = "history-entry mb-2 border-b border-white/5 pb-2 animate-pulse";
-    
     const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    const isSystemError = d.err > 0 || (d.e1>0||d.e2>0||d.e3>0||d.e4>0||d.e5>0);
+    
+    // Warna teks di dalam log tetap mengikuti status apakah sistem error atau tidak
+    const logTextColor = d.err > 0 ? 'text-red-400' : 'text-emerald-400';
 
     entry.innerHTML = `
         <div class="flex justify-between items-start">
             <span class="text-[9px] text-slate-500 font-mono">${timeStr}</span>
             <div class="text-right">
-                ${activeErrors.map(errText => `
-                    <p class="text-[10px] ${isSystemError ? 'text-red-400' : 'text-emerald-400'} font-medium leading-tight">
-                        ${errText}
+                ${logMessages.map(msg => `
+                    <p class="text-[10px] ${logTextColor} font-medium leading-tight">
+                        ${msg}
                     </p>
                 `).join('')}
             </div>
@@ -619,69 +568,54 @@ if (currentSnapshot !== lastErrorCode) {
 
     if(historyBox) {
         historyBox.prepend(entry);
-        // Hapus animasi pulse setelah 3 detik agar tidak mengganggu
         setTimeout(() => entry.classList.remove('animate-pulse'), 3000);
-        // Batasi log maksimal 20
         if(historyBox.children.length > 20) historyBox.lastElementChild.remove();
     }
 
     lastErrorCode = currentSnapshot;
 
-    // 5. Update Visual Kartu Utama
+    // FOKUS PERBAIKAN: LOGIKA WARNA KARTU UTAMA
     const card = document.getElementById('errorCard');
     const errTextElement = document.getElementById('errText');
     const statusDot = document.getElementById('statusDot');
 
     if (card && errTextElement) {
-        if (isSystemError) {
-            card.className = "glass-panel p-6 md:col-span-8 border-l-4 border-red-500 flex flex-col gap-4";
-            errTextElement.innerText = "System Warning";
-            errTextElement.classList.remove('text-emerald-500');
-            errTextElement.classList.add('text-red-500');
-            statusDot.classList.replace('bg-emerald-500', 'bg-red-500');
-        } else {
-            card.className = "glass-panel p-6 md:col-span-8 border-l-4 border-emerald-500 flex flex-col gap-4";
+        // HANYA JIKA d.err > 0 (BUKAN 0), MAKA MERAH
+        if (d.err !== 0) {
+            card.classList.replace('border-emerald-500', 'border-red-500');
+            errTextElement.innerText = errorDict[d.err] || `Warning: Err ${d.err}`;
+            errTextElement.classList.replace('text-emerald-500', 'text-red-500');
+            statusDot.className = "h-4 w-4 rounded-full bg-red-500 shadow-[0_0_10px_#ef4444]";
+        } 
+        // JIKA d.err == 0, MAKA HIJAU (NORMAL)
+        else {
+            card.classList.replace('border-red-500', 'border-emerald-500');
             errTextElement.innerText = "System Secure";
-            errTextElement.classList.remove('text-red-500');
-            errTextElement.classList.add('text-emerald-500');
-            statusDot.classList.replace('bg-red-500', 'bg-emerald-500');
+            errTextElement.classList.replace('text-red-500', 'text-emerald-500');
+            statusDot.className = "h-4 w-4 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981]";
         }
     }
 }
 
             if(d.ts) {
                 document.getElementById('lastUpdate').innerText = new Date(d.ts).toLocaleTimeString();
-                
-                // Simpan ke Dexie lokal
-                db.history.add({
-                    ts: d.ts,
-                    w: d.p || 0,
-                    v: d.v || 0,
-                    a: d.a || 0,
-                    t: d.tM || 0,
-                    tb: d.tB || 0
-                });
+                db.history.add({ ts: d.ts, w: d.p || 0, v: d.v || 0, a: d.a || 0, t: d.tM || 0 });
             }
 
   if(liveMode) {
-    // Menghapus data lama jika lebih dari 50 poin
     if(unifiedChart.data.labels.length > 50) {
         unifiedChart.data.labels.shift();
         unifiedChart.data.datasets.forEach(ds => ds.data.shift());
     }
-
-    // Menambahkan data baru
     unifiedChart.data.labels.push(""); 
-    unifiedChart.data.datasets[0].data.push(d.p || 0);    // Watt -> Index 0
-    unifiedChart.data.datasets[1].data.push(d.v || 0);    // Volt -> Index 1
-    unifiedChart.data.datasets[2].data.push(d.a || 0);    // Amp  -> Index 2
-    unifiedChart.data.datasets[3].data.push(d.tM || 0);   // Temp Mosfet -> Index 3
-    unifiedChart.data.datasets[4].data.push(d.tB || 0);   // Temp Battery -> Index 4
-
-    // Update grafik tanpa animasi (agar ringan)
+    unifiedChart.data.datasets[0].data.push(d.p || 0);
+    unifiedChart.data.datasets[1].data.push(d.v || 0);
+    unifiedChart.data.datasets[2].data.push(d.a || 0);
+    unifiedChart.data.datasets[3].data.push(d.tM || 0);
+    unifiedChart.data.datasets[4].data.push(d.tB || 0);
     unifiedChart.update('none');
+  }
 }
-        }
 
 window.handleDurationChange = async () => {
     const mode = document.getElementById('chartDuration').value;
@@ -711,37 +645,26 @@ window.handleDurationChange = async () => {
 
     try {
         progressBar.style.width = '40%';
-        
-        // Bersihkan data lama di Dexie (opsional, agar db tidak bengkak)
-        const oldDataThreshold = now - (14 * 86400000); // hapus yang lebih dari 14 hari
+        const oldDataThreshold = now - (14 * 86400000);
         await db.history.where('ts').below(oldDataThreshold).delete();
-        
         progressBar.style.width = '90%';
-        
         const allData = await db.history.where('ts').aboveOrEqual(start).toArray();
-
-        // Optimasi: Map data dari database lokal ke grafik
         unifiedChart.data.labels = allData.map(d => new Date(d.ts).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}));
         unifiedChart.data.datasets[0].data = allData.map(d => d.w);
         unifiedChart.data.datasets[1].data = allData.map(d => d.v);
         unifiedChart.data.datasets[2].data = allData.map(d => d.a);
         unifiedChart.data.datasets[3].data = allData.map(d => d.t);
-        unifiedChart.data.datasets[4].data = allData.map(d => d.tb);
-
         unifiedChart.update('none');
-        
         progressBar.style.width = '100%';
         updateLabel.innerText = `${allData.length} Pts Loaded`;
-        
         setTimeout(() => progressContainer.classList.add('hidden'), 2000);
-
     } catch (err) {
         console.error(err);
         updateLabel.innerText = "Sync Error";
     }
 };
 
-        function update(id, v) { const e = document.getElementById(id); if(e) e.innerText = v; }
-       </script>
+function update(id, v) { const e = document.getElementById(id); if(e) e.innerText = v; }
+</script>
 </body>
 </html>
