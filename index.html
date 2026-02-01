@@ -228,9 +228,13 @@
         </div>
 
 
-<div id="progressContainer" class="hidden w-32 h-1 bg-white/5 rounded-full overflow-hidden mr-4">
-                    <div id="syncProgressBar" class="h-full bg-amber-500 transition-all duration-300" style="width: 0%"></div>
-                </div>
+<div class="flex items-center gap-2">
+    <div id="progressContainer" class="hidden w-32 h-1 bg-white/5 rounded-full overflow-hidden">
+        <div id="syncProgressBar" class="h-full bg-amber-500 transition-all duration-300" style="width: 0%"></div>
+    </div>
+    <span id="syncPercent" class="label-tech !text-[8px] text-amber-500 hidden">0%</span>
+</div>
+        
         <select id="chartDuration" onchange="window.handleDurationChange()" class="bg-black/50 border border-white/10 rounded-lg px-2 py-1 text-[10px] label-tech text-white outline-none">
             <option value="live">Live Stream</option>
             <option value="12h">Last 12 Hours</option>
@@ -408,45 +412,54 @@
         let firestore = null;
         let liveMode = true;
         let lastErrorCode = -1;
-
 async function syncFromRTDB(rtdb) {
     const updateLabel = document.getElementById('lastUpdate');
     const progressContainer = document.getElementById('progressContainer');
     const progressBar = document.getElementById('syncProgressBar');
+    const percentLabel = document.getElementById('syncPercent');
 
     updateLabel.innerText = "Downloading Cloud...";
     progressContainer.classList.remove('hidden');
-    progressBar.style.width = '20%';
+    percentLabel.classList.remove('hidden');
+    progressBar.style.width = '0%';
+    percentLabel.innerText = '0%';
 
     try {
-        // Ambil 1000 data terakhir dari node 'bms_history'
-        // Sesuaikan nama 'bms_history' dengan nama node di Firebase Anda
         const historyRef = ref(rtdb, 'bms_history');
-        const recentQuery = rtdbQuery(historyRef, limitToLast(604800));
+        const recentQuery = rtdbQuery(historyRef, limitToLast(604800)); // Sesuaikan limit sesuai kebutuhan
         const snapshot = await get(recentQuery);
 
         if (snapshot.exists()) {
             const cloudData = [];
+            const totalData = snapshot.size; // Mendapatkan total jumlah data dari Firebase
+            let processed = 0;
+
             snapshot.forEach((child) => {
                 const d = child.val();
                 cloudData.push({
                     ts: d.ts,
-                    w: d.p || 0,
-                    v: d.v || 0,
-                    a: d.a || 0,
-                    t: d.tM || 0, // Mosfet
-                    tb: d.tB || 0 // Battery
+                    w: Number((d.p || 0).toFixed(2)), // Langsung simpan 2 desimal agar hemat storage
+                    v: Number((d.v || 0).toFixed(2)),
+                    a: Number((d.a || 0).toFixed(2)),
+                    t: Number((d.tM || 0).toFixed(2)),
+                    tb: Number((d.tB || 0).toFixed(2))
                 });
+
+                // Update Progress per data
+                processed++;
+                const currentPercent = Math.round((processed / totalData) * 100);
+                
+                // Update UI setiap 10% agar tidak memberatkan browser
+                if (processed % 10 === 0 || processed === totalData) {
+                    progressBar.style.width = currentPercent + '%';
+                    percentLabel.innerText = currentPercent + '%';
+                }
             });
 
-            progressBar.style.width = '60%';
-            // Simpan massal ke Dexie
-            await db.history.bulkPut(cloudData);
+            updateLabel.innerText = "Saving to Local...";
+            await db.history.bulkPut(cloudData); // Simpan massal ke Dexie
             
-            progressBar.style.width = '100%';
             updateLabel.innerText = "Cloud Synced";
-            
-            // Otomatis pindah ke tampilan 12 jam agar grafik langsung muncul
             document.getElementById('chartDuration').value = '12h';
             window.handleDurationChange();
         }
@@ -454,7 +467,10 @@ async function syncFromRTDB(rtdb) {
         console.error("Sync Error:", err);
         updateLabel.innerText = "Sync Failed";
     } finally {
-        setTimeout(() => progressContainer.classList.add('hidden'), 2000);
+        setTimeout(() => {
+            progressContainer.classList.add('hidden');
+            percentLabel.classList.add('hidden');
+        }, 3000);
     }
 }
 
