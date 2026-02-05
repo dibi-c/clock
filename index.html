@@ -427,7 +427,7 @@ async function syncFromRTDB(rtdb) {
     try {
         // Gunakan limit yang lebih masuk akal dulu untuk testing, misal 10.000
         const historyRef = ref(rtdb, 'bms_history');
-        const recentQuery = rtdbQuery(historyRef, limitToLast(50000)); 
+        const recentQuery = rtdbQuery(historyRef, limitToLast(201600)); 
         const snapshot = await get(recentQuery);
 
         if (snapshot.exists()) {
@@ -518,18 +518,17 @@ function formatTime(hours) {
 }
 
         const errorDict = {
-            0: "Normal Operation",
-            1: "Cell Undervoltage",
-            2: "Reserved Status",
-            3: "EEPROM Memory Error",
-            4: "Thermal Anomaly",
-            5: "Activation Failure",
-            6: "Short Circuit Detected",
-            7: "Overcurrent Protection",
-            8: "Critical Battery",
-            9: "Charge Overvoltage",
-            10: "Low Battery",
-            11: "Load Overload"
+             0: "Sistem Normal",
+             1: "Tegangan Sel di Bawah Ambang Batas (2.5V)",
+             3: "Kesalahan Penulisan/Pembacaan Memori EEPROM",
+             4: "Proteksi Suhu: Terdeteksi Anomali Suhu Operasional",
+             5: "Aktivasi Sistem Trip: Gagal Reaktivasi Deteksi Arus Terpasang",
+             6: "Terdeteksi Hubungan Arus Pendek (Short Circuit)",
+             7: "Proteksi Arus Berlebih (Overcurrent Detected)",
+             8: "Tegangan Baterai Sangat Rendah: Diperlukan Pengisian Daya",
+             9: "Proteksi Pengisian: Tegangan Melebihi Batas Aman",
+            10: "Tegangan Baterai Rendah: Diperlukan Pengisian Daya",
+            11: "Kapasitas Rendah: Kurangi Beban"
         };
 
 
@@ -638,50 +637,55 @@ update('tMos', (d.tM || 0).toFixed(1) + '°C');
             document.getElementById('rChg').style.opacity = d.rC > 0.5 ? "1" : "0.2";
             document.getElementById('rDis').style.opacity = d.rD > 0.5 ? "1" : "0.2";
 
-// SNAPSHOT UNTUK HISTORY
+// --- KOREKSI LOGIKA LOG HISTORY ---
 const currentSnapshot = `${d.e1}-${d.e2}-${d.e3}-${d.e4}-${d.e5}-${d.err}`;
 
 if (currentSnapshot !== lastErrorCode) {
     const historyBox = document.getElementById('securityHistory');
     if(historyBox && historyBox.innerHTML.includes("Menunggu")) historyBox.innerHTML = "";
 
-    // Kumpulkan semua detail error sensor untuk log
-    let logMessages = [];
+    let logEntries = [];
+
+    // Cek E1 sampai E5
     ['e1', 'e2', 'e3', 'e4', 'e5'].forEach(key => {
-        if (d[key] > 0) logMessages.push(errorDict[d[key]] || `Sensor ${key.toUpperCase()}: ${d[key]}`);
+        if (d[key] > 0) {
+            // Ambil jam kejadian dari state (e1_time, dst)
+            const eventTime = d[key + '_time'] || "--:--:--"; 
+            logEntries.push({
+                time: eventTime,
+                msg: errorDict[d[key]] || `Unknown Error ${d[key]}`,
+                isMain: false
+            });
+        }
     });
 
-    // Pesan utama dari d.err
-    const mainErrText = errorDict[d.err] || (d.err > 0 ? `System Error: ${d.err}` : "Normal Operation");
-    if (!logMessages.includes(mainErrText)) logMessages.unshift(mainErrText);
-
-    // Tambah baris baru ke History Log
-    const entry = document.createElement('div');
-    entry.className = "history-entry mb-2 border-b border-white/5 pb-2 animate-pulse";
-    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    
-    // Warna teks di dalam log tetap mengikuti status apakah sistem error atau tidak
-    const logTextColor = d.err > 0 ? 'text-red-400' : 'text-emerald-400';
-
-    entry.innerHTML = `
-        <div class="flex justify-between items-start">
-            <span class="text-[9px] text-slate-500 font-mono">${timeStr}</span>
-            <div class="text-right">
-                ${logMessages.map(msg => `
-                    <p class="text-[10px] ${logTextColor} font-medium leading-tight">
-                        ${msg}
-                    </p>
-                `).join('')}
-            </div>
-        </div>
-    `;
-
-    if(historyBox) {
-        historyBox.prepend(entry);
-        setTimeout(() => entry.classList.remove('animate-pulse'), 3000);
-        if(historyBox.children.length > 20) historyBox.lastElementChild.remove();
+    // Tambahkan pesan utama jika ada
+    if (d.err > 0) {
+        logEntries.unshift({
+            time: d.err_time || new Date().toLocaleTimeString(),
+            msg: errorDict[d.err] || `System Error: ${d.err}`,
+            isMain: true
+        });
     }
 
+    // Render ke UI
+    logEntries.forEach(item => {
+        const entry = document.createElement('div');
+        entry.className = "history-entry mb-2 border-b border-white/5 pb-2 animate-pulse";
+        const logTextColor = item.isMain ? 'text-red-400' : 'text-orange-400';
+
+        entry.innerHTML = `
+            <div class="flex justify-between items-start">
+                <span class="text-[9px] text-slate-500 font-mono">${item.time}</span>
+                <div class="text-right">
+                    <p class="text-[10px] ${logTextColor} font-medium leading-tight">${item.msg}</p>
+                </div>
+            </div>
+        `;
+        historyBox.prepend(entry);
+    });
+
+    if(historyBox && historyBox.children.length > 30) historyBox.lastElementChild.remove();
     lastErrorCode = currentSnapshot;
 
     // FOKUS PERBAIKAN: LOGIKA WARNA KARTU UTAMA
