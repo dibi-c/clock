@@ -27,6 +27,7 @@
             background-image: linear-gradient(to bottom, rgba(2, 4, 8, 0.9), rgba(2, 4, 8, 1)),
                               url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
             min-height: 100vh;
+            overflow-x: hidden; /* Mencegah scroll horizontal body */
         }
 
         .glass-panel { 
@@ -37,9 +38,18 @@
         .big-number { font-family: 'JetBrains Mono', monospace; font-weight: 800; letter-spacing: -0.05em; }
         .label-tech { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; color: #475569; }
         
-        .tab-content { display: none; animation: slideUp 0.3s ease-out; }
-        .tab-content.active { display: block; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* Animasi Slide Baru */
+        #tab-wrapper {
+            display: flex;
+            width: 400%; /* 4 Tab = 400% */
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform;
+        }
+        .tab-page {
+            width: 25%; /* Tiap halaman ambil 1/4 dari wrapper */
+            flex-shrink: 0;
+            padding: 0 1rem;
+        }
 
         .nav-bar { background: rgba(10, 14, 23, 0.9); backdrop-filter: blur(15px); border-top: 1px solid rgba(255,255,255,0.1); }
         .tab-btn { color: #64748b; transition: all 0.3s; position: relative; }
@@ -72,121 +82,204 @@
         </div>
     </nav>
 
-    <main class="max-w-4xl mx-auto px-4">
+    <main class="max-w-4xl mx-auto overflow-hidden">
         
-        <div id="tab-home" class="tab-content active space-y-4">
-            <div class="glass-panel p-8 flex flex-col items-center relative overflow-hidden">
-                <span class="label-tech mb-6">Energy Level</span>
-                <div class="relative flex items-center justify-center">
-                    <svg class="w-48 h-48 transform -rotate-90">
-                        <circle cx="96" cy="96" r="85" stroke="currentColor" stroke-width="6" fill="transparent" class="text-white/5" />
-                        <circle id="socCircle" cx="96" cy="96" r="85" stroke="#f59e0b" stroke-width="10" fill="transparent" stroke-dasharray="534" stroke-dashoffset="534" stroke-linecap="round" style="transition: stroke-dashoffset 0.8s ease;" />
-                    </svg>
-                    <div class="absolute text-center">
-                        <span id="soc" class="big-number text-7xl">0</span>
-                        <span class="text-xl font-light text-slate-500">%</span>
+        <div id="tab-wrapper">
+            
+            <div class="tab-page">
+                <div id="tab-home" class="space-y-4">
+                    <div class="glass-panel p-8 flex flex-col items-center relative overflow-hidden">
+                        <span class="label-tech mb-6">Energy Level</span>
+                        <div class="relative flex items-center justify-center">
+                            <svg class="w-48 h-48 transform -rotate-90">
+                                <circle cx="96" cy="96" r="85" stroke="currentColor" stroke-width="6" fill="transparent" class="text-white/5" />
+                                <circle id="socCircle" cx="96" cy="96" r="85" stroke="#f59e0b" stroke-width="10" fill="transparent" stroke-dasharray="534" stroke-dashoffset="534" stroke-linecap="round" style="transition: stroke-dashoffset 0.8s ease;" />
+                            </svg>
+                            <div class="absolute text-center">
+                                <span id="soc" class="big-number text-7xl">0</span>
+                                <span class="text-xl font-light text-slate-500">%</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 text-center">
+                            <p id="time-remaining-value" class="big-number text-[10px] text-slate-400">Waktu Sisa: --</p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-8 mt-8 w-full border-t border-white/5 pt-6 text-center">
+                            <div><p class="label-tech">Current (A)</p><p class="big-number text-2xl text-amber-500" id="current">0.00</p></div>
+                            <div class="border-l border-white/5"><p class="label-tech">Load (W)</p><p class="big-number text-2xl text-blue-500" id="power">0</p></div>
+                        </div>
                     </div>
-                </div>
-                <div class="mt-4 text-center">
-                    <p id="time-remaining-value" class="big-number text-[10px] text-slate-400">Waktu Sisa: --</p>
-                </div>
-                <div class="grid grid-cols-2 gap-8 mt-8 w-full border-t border-white/5 pt-6 text-center">
-                    <div><p class="label-tech">Current (A)</p><p class="big-number text-2xl text-amber-500" id="current">0.00</p></div>
-                    <div class="border-l border-white/5"><p class="label-tech">Load (W)</p><p class="big-number text-2xl text-blue-500" id="power">0</p></div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div id="rChg" class="glass-panel p-4 flex items-center justify-center gap-3 opacity-20"><span class="text-lg">⚡</span><span class="label-tech">Charging</span></div>
+                        <div id="rDis" class="glass-panel p-4 flex items-center justify-center gap-3 opacity-20"><span class="text-lg">🔌</span><span class="label-tech">Discharge</span></div>
+                    </div>
+
+                    <div id="errorCard" class="glass-panel p-6 border-l-4 border-emerald-500 flex flex-col gap-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-4">
+                                <div id="statusDot" class="h-3 w-3 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]"></div>
+                                <div><p class="label-tech">Status</p><h3 id="errText" class="big-number text-sm uppercase text-emerald-500">System Secure</h3></div>
+                            </div>
+                            <button onclick="toggleLog()" class="px-3 py-1 bg-white/5 rounded-lg border border-white/10 text-[8px] label-tech text-white">Log</button>
+                        </div>
+                        <div id="historyContent" class="collapsed border-t border-white/5 pt-4">
+                            <div id="securityHistory" class="max-h-32 overflow-y-auto pr-2">
+                                <div class="history-entry text-slate-600 italic">Menunggu telemetri...</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
-                <div id="rChg" class="glass-panel p-4 flex items-center justify-center gap-3 opacity-20"><span class="text-lg">⚡</span><span class="label-tech">Charging</span></div>
-                <div id="rDis" class="glass-panel p-4 flex items-center justify-center gap-3 opacity-20"><span class="text-lg">🔌</span><span class="label-tech">Discharge</span></div>
+            <div class="tab-page">
+                <div id="tab-cells" class="space-y-4">
+                    <div class="glass-panel p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <span class="label-tech">Cell Voltages</span>
+                            <span id="vTotal" class="big-number text-xl text-white tracking-wider">0.00V</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-white/5 p-3 rounded-xl text-center border border-white/5">
+                                <p class="label-tech !text-[7px] opacity-50 mb-1">C1</p>
+                                <p id="v1" class="big-number text-lg text-blue-400">0.00</p>
+                            </div>
+                            <div class="bg-white/5 p-3 rounded-xl text-center border border-white/5">
+                                <p class="label-tech !text-[7px] opacity-50 mb-1">C2</p>
+                                <p id="v2" class="big-number text-lg text-blue-400">0.00</p>
+                            </div>
+                            <div class="bg-white/5 p-3 rounded-xl text-center border border-white/5">
+                                <p class="label-tech !text-[7px] opacity-50 mb-1">C3</p>
+                                <p id="v3" class="big-number text-lg text-blue-400">0.00</p>
+                            </div>
+                            <div class="bg-white/5 p-3 rounded-xl text-center border border-white/5">
+                                <p class="label-tech !text-[7px] opacity-50 mb-1">C4</p>
+                                <p id="v4" class="big-number text-lg text-blue-400">0.00</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-6">
+                        <span class="label-tech">Capacity Cycle</span>
+                        <div class="grid grid-cols-2 gap-4 mt-6 items-end">
+                            <div class="flex flex-col gap-1.5">
+                                <div class="flex items-center gap-1 opacity-50 uppercase tracking-tighter text-[7px] font-mono">
+                                    <span>Wh Now</span> <span class="opacity-30">/</span> <span>Ah Now</span>
+                                </div>
+                                <div class="flex items-baseline gap-1 font-mono">
+                                    <p id="whNow" class="big-number text-xl text-blue-400 leading-none">0</p>
+                                    <span class="text-blue-400/30 text-lg">/</span>
+                                    <p id="ahNow" class="big-number text-xl text-blue-400 leading-none">0</p>
+                                </div>
+                            </div>
+                            <div class="text-right flex flex-col gap-1.5">
+                                <p class="label-tech !text-[7px] opacity-50 uppercase tracking-tighter">Health (SOH)</p>
+                                <p id="soh" class="big-number text-xl text-emerald-400 leading-none">100%</p>
+                            </div>
+                        </div>
+                        <div class="mt-6 pt-4 border-t border-white/10 flex justify-between items-center">
+                            <div class="flex flex-col gap-1">
+                                <p class="label-tech !text-[7px] opacity-50">Total Cycles</p>
+                                <p id="cycles" class="big-number text-lg">0</p>
+                            </div>
+                            <div class="text-right flex flex-col gap-1">
+                                <p class="label-tech !text-[7px] opacity-50">Daily Usage</p>
+                                <p id="usagePer" class="big-number text-lg text-amber-500">0%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div id="errorCard" class="glass-panel p-6 border-l-4 border-emerald-500 flex flex-col gap-4">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-4">
-                        <div id="statusDot" class="h-3 w-3 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]"></div>
-                        <div><p class="label-tech">Status</p><h3 id="errText" class="big-number text-sm uppercase text-emerald-500">System Secure</h3></div>
+            <div class="tab-page">
+                <div id="tab-thermal" class="space-y-4">
+                    <div class="glass-panel p-6">
+                        <span class="label-tech">Temperature Sensors</span>
+                        <div class="grid grid-cols-1 gap-4 mt-4">
+                            <div class="bg-white/5 p-6 rounded-2xl flex justify-between items-center transition-all border border-white/5">
+                                <div><p class="label-tech !text-[8px] opacity-60">Mosfet Unit</p><p id="tMos" class="big-number text-4xl">0°C</p></div>
+                                <div class="h-12 w-1 bg-blue-500 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
+                            </div>
+                            <div class="bg-white/5 p-6 rounded-2xl flex justify-between items-center border-l-4 border-orange-500 transition-all">
+                                <div><p class="label-tech !text-[8px] opacity-60">Battery Pack</p><p id="tBatt" class="big-number text-4xl text-orange-500">0°C</p></div>
+                                <div class="h-12 w-1 bg-orange-500 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.5)]"></div>
+                            </div>
+                        </div>
                     </div>
-                    <button onclick="toggleLog()" class="px-3 py-1 bg-white/5 rounded-lg border border-white/10 text-[8px] label-tech text-white">Log</button>
-                </div>
-                <div id="historyContent" class="collapsed border-t border-white/5 pt-4">
-                    <div id="securityHistory" class="max-h-32 overflow-y-auto pr-2">
-                        <div class="history-entry text-slate-600 italic">Menunggu telemetri...</div>
+                    <div class="glass-panel p-4 bg-gradient-to-br from-white/5 to-transparent">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="h-3 w-1 bg-slate-400 rounded-full"></div>
+                            <span class="label-tech !text-[9px] tracking-widest opacity-70">Factory Design Specs</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-black/20 p-3 rounded-xl border border-white/5">
+                                <p class="label-tech !text-[7px] opacity-50 mb-1 uppercase">Design Capacity (Energy)</p>
+                                <div class="flex items-baseline gap-1">
+                                    <p id="whDesign" class="big-number text-xl text-slate-300">0</p>
+                                    <span class="text-[10px] text-slate-500 font-mono">Wh</span>
+                                </div>
+                            </div>
+                            <div class="bg-black/20 p-3 rounded-xl border border-white/5 text-right">
+                                <p class="label-tech !text-[7px] opacity-50 mb-1 uppercase">Design Capacity (Amp)</p>
+                                <div class="flex items-baseline gap-1 justify-end">
+                                    <p id="ahDesign" class="big-number text-xl text-slate-300">0</p>
+                                    <span class="text-[10px] text-slate-500 font-mono">Ah</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div id="tab-cells" class="tab-content space-y-4">
-            <div class="glass-panel p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <span class="label-tech">Cell Voltages</span>
-                    <span id="vTotal" class="big-number text-xl text-white">0.00V</span>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-white/5 p-4 rounded-xl text-center"><p class="label-tech !text-[7px]">C1</p><p id="v1" class="big-number text-lg">0.00</p></div>
-                    <div class="bg-white/5 p-4 rounded-xl text-center"><p class="label-tech !text-[7px]">C2</p><p id="v2" class="big-number text-lg">0.00</p></div>
-                    <div class="bg-white/5 p-4 rounded-xl text-center"><p class="label-tech !text-[7px]">C3</p><p id="v3" class="big-number text-lg">0.00</p></div>
-                    <div class="bg-white/5 p-4 rounded-xl text-center"><p class="label-tech !text-[7px]">C4</p><p id="v4" class="big-number text-lg">0.00</p></div>
-                </div>
-            </div>
-            <div class="glass-panel p-6">
-                <span class="label-tech">Capacity Cycle</span>
-                <div class="grid grid-cols-2 gap-4 mt-4">
-                    <div><p class="label-tech !text-[7px] opacity-50">Wh Now</p><p id="whNow" class="big-number text-xl text-blue-400">0</p></div>
-                    <div><p class="label-tech !text-[7px] opacity-50">SOH</p><p id="soh" class="big-number text-xl text-blue-400">0%</p></div>
-                </div>
-                <div class="mt-4 pt-4 border-t border-white/5 flex justify-between">
-                    <div><p class="label-tech !text-[7px] opacity-50">Cycles</p><p id="cycles" class="big-number text-xl">0</p></div>
-                    <div class="text-right"><p class="label-tech !text-[7px] opacity-50">Usage</p><p id="usagePer" class="big-number text-xl text-amber-500">0%</p></div>
-                </div>
-            </div>
-        </div>
+            <div class="tab-page">
+                <div id="tab-charts" class="space-y-4">
+                    <div class="glass-panel p-4">
+                        <div class="flex justify-between items-center mb-4">
+                            <select id="chartDuration" onchange="window.handleDurationChange()" class="bg-black/50 border border-white/10 rounded-lg px-2 py-1 text-[10px] label-tech text-white outline-none">
+                                <option value="live">Live Stream</option>
+                                <option value="12h">Last 12 Hours</option>
+                                <option value="24h">Last 24 Hours</option>
+                                <option value="7d">Last 7 Days</option>
+                            </select>
+                            <div id="progressContainer" class="hidden w-20 h-1 bg-white/5 rounded-full overflow-hidden">
+                                <div id="syncProgressBar" class="h-full bg-amber-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="h-72 relative"><canvas id="unifiedChart"></canvas></div>
+                        <div id="chartFilters" class="flex flex-wrap gap-2 mt-4 justify-center">
+                            <button onclick="toggleDataset(0)" id="btn-0" class="px-2 py-1 rounded-full border border-blue-500/50 text-[7px] font-bold text-blue-400">LOAD</button>
+                            <button onclick="toggleDataset(1)" id="btn-1" class="px-2 py-1 rounded-full border border-emerald-500/50 text-[7px] font-bold text-emerald-400">VOLT</button>
+                            <button onclick="toggleDataset(2)" id="btn-2" class="px-2 py-1 rounded-full border border-orange-500/50 text-[7px] font-bold text-orange-400">AMP</button>
+                            <button onclick="toggleDataset(3)" id="btn-3" class="px-2 py-1 rounded-full border border-red-500/50 text-[7px] font-bold text-red-400 opacity-30 grayscale">T-MOS</button>
+                            <button onclick="toggleDataset(4)" id="btn-4" class="px-2 py-1 rounded-full border border-purple-500/50 text-[7px] font-bold text-purple-400 opacity-30 grayscale">T-BATT</button>
+                        </div>
+                    </div>
 
-        <div id="tab-thermal" class="tab-content space-y-4">
-            <div class="glass-panel p-6">
-                <span class="label-tech">Temperature Sensors</span>
-                <div class="grid grid-cols-1 gap-4 mt-4">
-                    <div class="bg-white/5 p-6 rounded-2xl flex justify-between items-center">
-                        <div><p class="label-tech !text-[8px]">Mosfet Unit</p><p id="tMos" class="big-number text-4xl">0°C</p></div>
-                        <div class="h-12 w-1 bg-blue-500 rounded-full"></div>
-                    </div>
-                    <div class="bg-white/5 p-6 rounded-2xl flex justify-between items-center border-l-4 border-orange-500">
-                        <div><p class="label-tech !text-[8px]">Battery Pack</p><p id="tBatt" class="big-number text-4xl text-orange-500">0°C</p></div>
-                        <div class="h-12 w-1 bg-orange-500 rounded-full"></div>
+                    <div class="glass-panel p-6 grid grid-cols-2 gap-4">
+                        <div class="flex flex-col gap-1.5 border-r border-white/5">
+                            <div class="flex items-center gap-1 opacity-60 uppercase tracking-tighter text-[7px] font-mono text-emerald-500">
+                                <span>Wh In (+)</span> <span class="opacity-30">/</span> <span>Ah In</span>
+                            </div>
+                            <div class="flex items-baseline gap-1 font-mono">
+                                <p id="whPos" class="big-number text-xl text-emerald-400 leading-none">0</p>
+                                <span class="text-emerald-400/30 text-lg">/</span>
+                                <p id="capChg" class="big-number text-xl text-emerald-400 leading-none">0</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-1.5 text-right items-end">
+                            <div class="flex items-center gap-1 opacity-60 uppercase tracking-tighter text-[7px] font-mono text-red-500">
+                                <span>Wh Out (-)</span> <span class="opacity-30">/</span> <span>Ah Out</span>
+                            </div>
+                            <div class="flex items-baseline gap-1 font-mono">
+                                <p id="whNeg" class="big-number text-xl text-red-400 leading-none">0</p>
+                                <span class="text-red-400/30 text-lg">/</span>
+                                <p id="capDis" class="big-number text-xl text-red-400 leading-none">0</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div id="tab-charts" class="tab-content space-y-4">
-            <div class="glass-panel p-4">
-                <div class="flex justify-between items-center mb-4">
-                    <select id="chartDuration" onchange="window.handleDurationChange()" class="bg-black/50 border border-white/10 rounded-lg px-2 py-1 text-[10px] label-tech text-white outline-none">
-                        <option value="live">Live Stream</option>
-                        <option value="12h">Last 12 Hours</option>
-                        <option value="24h">Last 24 Hours</option>
-                        <option value="7d">Last 7 Days</option>
-                    </select>
-                    <div id="progressContainer" class="hidden w-20 h-1 bg-white/5 rounded-full overflow-hidden">
-                        <div id="syncProgressBar" class="h-full bg-amber-500" style="width: 0%"></div>
-                    </div>
-                </div>
-                <div class="h-72 relative"><canvas id="unifiedChart"></canvas></div>
-                <div id="chartFilters" class="flex flex-wrap gap-2 mt-4 justify-center">
-                    <button onclick="toggleDataset(0)" id="btn-0" class="px-2 py-1 rounded-full border border-blue-500/50 text-[7px] font-bold text-blue-400">LOAD</button>
-                    <button onclick="toggleDataset(1)" id="btn-1" class="px-2 py-1 rounded-full border border-emerald-500/50 text-[7px] font-bold text-emerald-400">VOLT</button>
-                    <button onclick="toggleDataset(2)" id="btn-2" class="px-2 py-1 rounded-full border border-orange-500/50 text-[7px] font-bold text-orange-400">AMP</button>
-                    <button onclick="toggleDataset(3)" id="btn-3" class="px-2 py-1 rounded-full border border-red-500/50 text-[7px] font-bold text-red-400 opacity-30 grayscale">T-MOS</button>
-                    <button onclick="toggleDataset(4)" id="btn-4" class="px-2 py-1 rounded-full border border-purple-500/50 text-[7px] font-bold text-purple-400 opacity-30 grayscale">T-BATT</button>
-                </div>
-            </div>
-            <div class="glass-panel p-6 grid grid-cols-2 gap-4">
-                <div><p class="label-tech !text-[7px] text-emerald-500">Wh In (+)</p><p id="whPos" class="big-number">0</p></div>
-                <div><p class="label-tech !text-[7px] text-red-500">Wh Out (-)</p><p id="whNeg" class="big-number">0</p></div>
-            </div>
-        </div>
-    </main>
+        </div> </main>
 
     <div class="nav-bar fixed bottom-0 left-0 right-0 h-20 flex justify-around items-center px-4 z-50">
         <button onclick="switchTab('home')" id="nav-home" class="tab-btn active flex flex-col items-center gap-1">
@@ -214,11 +307,23 @@
 
     <script>
         function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            const wrapper = document.getElementById('tab-wrapper');
+            const tabs = ['home', 'cells', 'thermal', 'charts'];
+            const index = tabs.indexOf(tabId);
+
+            if (index !== -1) {
+                // Geser wrapper ke posisi tab yang dipilih
+                wrapper.style.transform = `translateX(-${index * 25}%)`;
+            }
+
+            // Update status aktif navigasi
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById('tab-' + tabId).classList.add('active');
             document.getElementById('nav-' + tabId).classList.add('active');
+            
+            // Scroll ke atas saat pindah tab
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
+
         function openCfg() { document.getElementById('configModal').style.display = 'flex'; }
         function closeCfg() { document.getElementById('configModal').style.display = 'none'; }
         function saveCfg() {
@@ -248,6 +353,12 @@
         let liveMode = true;
         let lastErrorCode = -1;
 
+
+
+
+
+
+
         const errorDict = { 0: "Sistem Normal", 1: "Tegangan Sel di Bawah Ambang Batas (2.5V)", 3: "Kesalahan Penulisan/Pembacaan Memori EEPROM", 4: "Proteksi Suhu: Terdeteksi Anomali Suhu Operasional", 5: "Aktivasi Sistem Trip: Gagal Reaktivasi Deteksi Arus Terpasang", 6: "Terdeteksi Hubungan Arus Pendek (Short Circuit)", 7: "Proteksi Arus Berlebih (Overcurrent Detected)", 8: "Tegangan Baterai Sangat Rendah: Diperlukan Pengisian Daya", 9: "Proteksi Pengisian: Tegangan Melebihi Batas Aman", 10: "Tegangan Baterai Rendah: Diperlukan Pengisian Daya", 11: "Kapasitas Rendah: Kurangi Beban" };
 
         const ctx = document.getElementById('unifiedChart').getContext('2d');
@@ -259,8 +370,8 @@
                     { label: 'Watt', data: [], borderColor: '#3b82f6', borderWidth: 2, tension: 0.4, pointRadius: 0, yAxisID: 'yPower' },
                     { label: 'Volt', data: [], borderColor: '#10b981', borderWidth: 2, tension: 0.4, pointRadius: 0, yAxisID: 'yVolt' },
                     { label: 'Amp', data: [], borderColor: '#f59e0b', borderWidth: 1.5, tension: 0.4, pointRadius: 0, yAxisID: 'yAmp' },
-                    { label: 'T-Mos', data: [], borderColor: '#ef4444', borderWidth: 1, tension: 0.4, pointRadius: 0, yAxisID: 'yTemp', hidden: true },
-                    { label: 'T-Batt', data: [], borderColor: '#a855f7', borderWidth: 1, tension: 0.4, pointRadius: 0, yAxisID: 'yTemp', hidden: true }
+                    { label: 'T-Mos', data: [], borderColor: '#ef4444', borderWidth: 1, tension: 0.4, pointRadius: 0, yAxisID: 'yTemp'},
+                    { label: 'T-Batt', data: [], borderColor: '#a855f7', borderWidth: 1, tension: 0.4, pointRadius: 0, yAxisID: 'yTemp'}
                 ]
             },
             options: {
@@ -336,12 +447,17 @@
             update('vTotal', (d.v || 0).toFixed(2) + 'V');
             update('v1', (d.v1 || 0).toFixed(3)); update('v2', (d.v2 || 0).toFixed(3));
             update('v3', (d.v3 || 0).toFixed(3)); update('v4', (d.v4 || 0).toFixed(3));
-            update('whNow', (d.whN || 0).toFixed(0));
+            update('whNow', (d.whN || 0).toFixed(1));
+            update('ahNow', (d.ahN || 0).toFixed(1));
             update('cycles', (d.cyc || 0)); update('soh', (d.soh || 0).toFixed(1) + '%');
             update('usagePer', (d.uP || 0).toFixed(1) + '%');
             update('tBatt', (d.tB || 0).toFixed(1) + '°C');
             update('tMos', (d.tM || 0).toFixed(1) + '°C');
             update('whPos', (d.wP || 0).toFixed(1)); update('whNeg', (d.wN || 0).toFixed(1));
+            update('whDesign', (d.whD || 0).toFixed(0)); 
+            update('ahDesign', (d.ahD || 0).toFixed(1)); 
+            update('capChg', (d.cChg || 0).toFixed(1)); 
+            update('capDis', (d.cDis || 0).toFixed(1));
 
             document.getElementById('socCircle').style.strokeDashoffset = 534 - (534 * (d.soc || 0) / 100);
             document.getElementById('rChg').style.opacity = d.rC > 0.5 ? "1" : "0.2";
@@ -395,7 +511,6 @@
             
             if (mode === 'live') { 
                 liveMode = true; 
-                // RESET DATA AGAR TIDAK HANG
                 unifiedChart.data.labels = [];
                 unifiedChart.data.datasets.forEach(ds => ds.data = []);
                 unifiedChart.update();
@@ -422,28 +537,82 @@
         };
 
         function updateTimeRemaining(ahIn, ahOut) {
+            const timeRemainingElement = document.getElementById('time-remaining-value');
+            if (!timeRemainingElement) return;
+
             const currentFromUI = parseFloat(document.getElementById('current').textContent) || 0;
-            const vTotalVal = parseFloat(document.getElementById('vTotal').textContent) || 1;
-            const whNowVal = parseFloat(document.getElementById('whNow').textContent) || 0;
-            const ahNowVal = whNowVal / vTotalVal;
+            const capRemFromUI = parseFloat(document.getElementById('ahNow').textContent) || 0;
+
+            let currentRem = currentFromUI;
+            let fullCap = ahIn;
+            let dchgCap = ahOut;
+
+            let diff = Math.max(0, fullCap - dchgCap);
+            let remainingCap = Math.max(0, capRemFromUI - diff);
 
             let timeRemainingText;
-            if (Math.abs(currentFromUI) < 0.1) timeRemainingText = "Diam";
-            else if (currentFromUI > 0) {
-                const capToFull = ahIn - ahNowVal;
-                timeRemainingText = formatTime(capToFull > 0 ? capToFull / currentFromUI : 0) + " (TTF)";
-            } else {
-                timeRemainingText = formatTime(ahNowVal / Math.abs(currentFromUI)) + " (TTE)";
+
+            if (Math.abs(currentRem) < 0.1) {
+                timeRemainingText = "Diam";
+            } 
+            else if (currentRem > 0) {
+                const capToFull = fullCap - capRemFromUI;
+                const hours = capToFull > 0 ? capToFull / currentRem : 0;
+                timeRemainingText = formatTime(hours) + " (TTF)";
+            } 
+            else {
+                const hours = remainingCap / Math.abs(currentRem);
+                timeRemainingText = formatTime(hours) + " (TTE)";
             }
-            document.getElementById('time-remaining-value').textContent = `Waktu Sisa: ${timeRemainingText}`;
+            timeRemainingElement.textContent = `Waktu Sisa: ${timeRemainingText}`;
         }
 
         function formatTime(hours) {
             if (hours === Infinity || isNaN(hours)) return "--";
             if (hours <= 0) return "0m";
-            const h = Math.floor(hours), m = Math.round((hours - h) * 60);
+            const h = Math.floor(hours);
+            const m = Math.round((hours - h) * 60);
             return h > 0 ? `${h}j ${m}m` : `${m}m`;
         }
+
+                // Tambahkan logika Swipe Gesture
+let touchstartX = 0;
+let touchendX = 0;
+
+const wrapper = document.getElementById('tab-wrapper');
+const tabs = ['home', 'cells', 'thermal', 'charts'];
+
+// Deteksi awal sentuhan
+window.addEventListener('touchstart', e => {
+    touchstartX = e.changedTouches[0].screenX;
+}, {passive: true});
+
+// Deteksi akhir sentuhan
+window.addEventListener('touchend', e => {
+    touchendX = e.changedTouches[0].screenX;
+    handleGesture();
+}, {passive: true});
+
+function handleGesture() {
+    const activeTab = document.querySelector('.tab-btn.active').id.replace('nav-', '');
+    let currentIndex = tabs.indexOf(activeTab);
+    
+    // Hitung jarak geser
+    const swipeDistance = touchstartX - touchendX;
+    const threshold = 70; // Sensitivitas swipe (dalam pixel)
+
+    if (swipeDistance > threshold) {
+        // Swipe Kiri -> Pindah ke tab kanan
+        if (currentIndex < tabs.length - 1) {
+            switchTab(tabs[currentIndex + 1]);
+        }
+    } else if (swipeDistance < -threshold) {
+        // Swipe Kanan -> Pindah ke tab kiri
+        if (currentIndex > 0) {
+            switchTab(tabs[currentIndex - 1]);
+        }
+    }
+}
 
         function update(id, v) { const e = document.getElementById(id); if(e) e.innerText = v; }
     </script>
