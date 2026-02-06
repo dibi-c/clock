@@ -425,50 +425,61 @@ async function syncFromRTDB(rtdb) {
     percentLabel.classList.remove('hidden');
 
     try {
-        // Gunakan limit yang lebih masuk akal dulu untuk testing, misal 10.000
+        // Gunakan limit yang masuk akal untuk browser (misal 50.000 poin terakhir)
+        // Jika butuh lebih, sebaiknya ditarik bertahap (chunking)
         const historyRef = ref(rtdb, 'bms_history');
-        const recentQuery = rtdbQuery(historyRef, limitToLast(201600)); 
+        
+        // Gunakan query yang lebih stabil
+        const recentQuery = rtdbQuery(historyRef, limitToLast(50000)); 
         const snapshot = await get(recentQuery);
 
         if (snapshot.exists()) {
-            const totalData = snapshot.size;
-            let processed = 0;
             const cloudData = [];
+            const dataObj = snapshot.val();
+            
+            // Mengambil keys dan mengurutkan secara kronologis
+            const keys = Object.keys(dataObj);
+            const totalData = keys.length;
 
             updateLabel.innerText = `Processing ${totalData.toLocaleString()} pts...`;
 
-            snapshot.forEach((child) => {
-                const d = child.val();
-                cloudData.push({
-                    ts: d.ts,
-                    w: Number((d.p || 0).toFixed(2)), // Pastikan 2 desimal
-                    v: Number((d.v || 0).toFixed(2)),
-                    a: Number((d.a || 0).toFixed(2)),
-                    t: Number((d.tM || 0).toFixed(2)),
-                    tb: Number((d.tB || 0).toFixed(2))
-                });
+            keys.forEach((key, index) => {
+                const d = dataObj[key];
+                if (d.ts) { // Pastikan data memiliki timestamp
+                    cloudData.push({
+                        ts: d.ts,
+                        w: Number((d.p || 0).toFixed(2)),
+                        v: Number((d.v || 0).toFixed(2)),
+                        a: Number((d.a || 0).toFixed(2)),
+                        t: Number((d.tM || 0).toFixed(2)),
+                        tb: Number((d.tB || 0).toFixed(2))
+                    });
+                }
 
-                processed++;
-                
-                // Update UI setiap 500 data agar tidak lambat karena render DOM
-                if (processed % 500 === 0 || processed === totalData) {
-                    const currentPercent = Math.round((processed / totalData) * 100);
+                // Update Progress UI setiap 1000 data
+                if (index % 1000 === 0) {
+                    const currentPercent = Math.round((index / totalData) * 100);
                     progressBar.style.width = currentPercent + '%';
                     percentLabel.innerText = currentPercent + '%';
                 }
             });
 
-            updateLabel.innerText = "Writing to Disk...";
-            await db.history.bulkPut(cloudData); //
+            updateLabel.innerText = "Saving to Local Database...";
             
-            updateLabel.innerText = "Success: " + totalData + " pts";
-            window.handleDurationChange();
+            // Gunakan bulkPut agar data yang sama diupdate, bukan diduplikasi
+            await db.history.bulkPut(cloudData);
+            
+            updateLabel.innerText = "Sync Complete: " + totalData + " pts";
+            
+            // Refresh grafik jika sedang tidak di mode live
+            if (!liveMode) window.handleDurationChange();
+            
         } else {
-            updateLabel.innerText = "No Data Found";
+            updateLabel.innerText = "No Cloud Data";
         }
     } catch (err) {
         console.error("Sync Error:", err);
-        updateLabel.innerText = "Memory Overflow / Timeout";
+        updateLabel.innerText = "Sync Failed: " + err.message;
     } finally {
         setTimeout(() => {
             progressContainer.classList.add('hidden');
