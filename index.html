@@ -621,7 +621,7 @@ const pathCharger = document.getElementById('pathCharger');
 const nodeCharger = document.getElementById('nodeCharger');
 
 // 1. Kondisi Utama: Jika d.chg aktif (kabel menyala)
-if (d.rChg === 1) {
+if (d.rC === 1) {
     pathCharger.style.stroke = '#10b981'; // Warna hijau menyala
     nodeCharger.style.color = '#10b981';
 
@@ -646,7 +646,7 @@ const pathLoad = document.getElementById('pathLoad');
 const nodeLoad = document.getElementById('nodeLoad');
 
 // 1. Kondisi Utama: Jika d.rDis aktif (kabel beban menyala)
-if (d.rDis === 1) {
+if (d.rD === 1) {
     pathLoad.style.stroke = '#3b82f6'; // Warna biru (beban)
     nodeLoad.style.color = '#3b82f6';
 
