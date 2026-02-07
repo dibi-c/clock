@@ -89,25 +89,80 @@
             <div class="tab-page">
                 <div id="tab-home" class="space-y-4">
                     <div class="glass-panel p-8 flex flex-col items-center relative overflow-hidden">
-                        <span class="label-tech mb-6">Energy Level</span>
-                        <div class="relative flex items-center justify-center">
-                            <svg class="w-48 h-48 transform -rotate-90">
-                                <circle cx="96" cy="96" r="85" stroke="currentColor" stroke-width="6" fill="transparent" class="text-white/5" />
-                                <circle id="socCircle" cx="96" cy="96" r="85" stroke="#f59e0b" stroke-width="10" fill="transparent" stroke-dasharray="534" stroke-dashoffset="534" stroke-linecap="round" style="transition: stroke-dashoffset 0.8s ease;" />
-                            </svg>
-                            <div class="absolute text-center">
-                                <span id="soc" class="big-number text-7xl">0</span>
-                                <span class="text-xl font-light text-slate-500">%</span>
-                            </div>
-                        </div>
-                        <div class="mt-4 text-center">
-                            <p id="time-remaining-value" class="big-number text-[10px] text-slate-400">Waktu Sisa: --</p>
-                        </div>
-                        <div class="grid grid-cols-2 gap-8 mt-8 w-full border-t border-white/5 pt-6 text-center">
-                            <div><p class="label-tech">Current (A)</p><p class="big-number text-2xl text-amber-500" id="current">0.00</p></div>
-                            <div class="border-l border-white/5"><p class="label-tech">Load (W)</p><p class="big-number text-2xl text-blue-500" id="power">0</p></div>
-                        </div>
-                    </div>
+    <span class="label-tech mb-6">Energy Level</span>
+    
+    <div class="relative flex items-center justify-center w-full">
+
+
+
+   <svg class="w-full h-48" viewBox="0 0 400 200">
+    <defs>
+        <style>
+            /* Aliran Kabel */
+            .flow-line { fill: none; stroke-width: 4; stroke-linecap: round; stroke-dasharray: 10, 15; }
+            .flowing { animation: flow 1s linear infinite; }
+            @keyframes flow { from { stroke-dashoffset: 25; } to { stroke-dashoffset: 0; } }
+            .line-off { stroke: rgba(255,255,255,0.05); stroke-dasharray: none; }
+            
+            /* Teks Label */
+            .usage-text { font-family: sans-serif; font-weight: 800; font-size: 14px; transition: opacity 0.5s ease; fill: currentColor; }
+
+            /* PERBAIKAN: Animasi Air Seamless ke Kanan */
+            @keyframes waveMove {
+                from { transform: translateX(-160px); }
+                to { transform: translateX(0px); }
+            }
+            .wave-active { 
+                animation: waveMove 3s linear infinite; 
+            }
+
+            #waterWave {
+                transition: transform 1s ease-out, fill 0.5s ease;
+            }
+        </style>
+
+        <clipPath id="circleMask">
+            <circle cx="0" cy="0" r="80" />
+        </clipPath>
+    </defs>
+
+    <text id="usageLeft" x="60" y="85" text-anchor="middle" class="usage-text text-emerald-500 opacity-0">0%</text>
+    <path id="pathCharger" d="M 20 100 L 100 100" class="line-off" />
+    <circle id="nodeCharger" cx="20" cy="100" r="4" fill="currentColor" class="text-white/10" />
+    
+    <text id="usageRight" x="340" y="85" text-anchor="middle" class="usage-text text-blue-500 opacity-0">0%</text>
+    <path id="pathLoad" d="M 300 100 L 380 100" class="line-off" />
+    <circle id="nodeLoad" cx="380" cy="100" r="4" fill="currentColor" class="text-white/10" />
+
+    <g transform="translate(200, 100)">
+        <circle cx="0" cy="0" r="85" stroke="currentColor" stroke-width="6" fill="transparent" class="text-white/5" />
+        
+        <g clip-path="url(#circleMask)">
+            <path id="waterWave" class="wave-active" 
+                  fill="#f59e0b" fill-opacity="0.4" 
+                  d="M-240 0 Q-200 -20 -160 0 T-80 0 T0 0 T80 0 T160 0 T240 0 V150 H-240 Z" 
+                  style="transform: translateY(80px);" />
+        </g>
+
+        <g transform="rotate(-90)">
+            <circle id="socCircle" cx="0" cy="0" r="85" stroke="#f59e0b" stroke-width="10" fill="transparent" 
+                    stroke-dasharray="534" stroke-dashoffset="534" stroke-linecap="round" 
+                    style="transition: stroke-dashoffset 0.8s ease;" />
+        </g>
+    </g>
+</svg>
+
+        <div class="absolute text-center">
+            <span id="soc" class="big-number text-7xl">0</span>
+            <span class="text-xl font-light text-slate-500">%</span>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-8 mt-8 w-full border-t border-white/5 pt-6 text-center">
+        <div><p class="label-tech">Current (A)</p><p class="big-number text-2xl text-amber-500" id="current">0.00</p></div>
+        <div class="border-l border-white/5"><p class="label-tech">Load (W)</p><p class="big-number text-2xl text-blue-500" id="power">0</p></div>
+    </div>
+</div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div id="rChg" class="glass-panel p-4 flex items-center justify-center gap-3 opacity-20"><span class="text-lg">⚡</span><span class="label-tech">Charging</span></div>
@@ -249,8 +304,8 @@
                             <button onclick="toggleDataset(0)" id="btn-0" class="px-2 py-1 rounded-full border border-blue-500/50 text-[7px] font-bold text-blue-400">LOAD</button>
                             <button onclick="toggleDataset(1)" id="btn-1" class="px-2 py-1 rounded-full border border-emerald-500/50 text-[7px] font-bold text-emerald-400">VOLT</button>
                             <button onclick="toggleDataset(2)" id="btn-2" class="px-2 py-1 rounded-full border border-orange-500/50 text-[7px] font-bold text-orange-400">AMP</button>
-                            <button onclick="toggleDataset(3)" id="btn-3" class="px-2 py-1 rounded-full border border-red-500/50 text-[7px] font-bold text-red-400 opacity-30 grayscale">T-MOS</button>
-                            <button onclick="toggleDataset(4)" id="btn-4" class="px-2 py-1 rounded-full border border-purple-500/50 text-[7px] font-bold text-purple-400 opacity-30 grayscale">T-BATT</button>
+                            <button onclick="toggleDataset(3)" id="btn-3" class="px-2 py-1 rounded-full border border-red-500/50 text-[7px] font-bold text-red-400 ">T-MOS</button>
+                            <button onclick="toggleDataset(4)" id="btn-4" class="px-2 py-1 rounded-full border border-purple-500/50 text-[7px] font-bold text-purple-400 ">T-BATT</button>
                         </div>
                     </div>
 
@@ -503,6 +558,87 @@
                 unifiedChart.data.datasets[4].data.push(Number((d.tB || 0).toFixed(2)));
                 unifiedChart.update('none');
             }
+
+
+ const waterElement = document.getElementById('waterWave');
+const currentAmps = Math.abs(d.a || 0); // Ambil nilai mutlak arus
+
+if (waterElement) {
+    // 1. Update Tinggi Air (Tetap jalan)
+    const waterLevel = 80 - (160 * (d.soc / 100));
+    waterElement.style.transform = `translateY(${waterLevel}px)`;
+
+    // 2. Kontrol Animasi Gelombang
+    // Jika arus > 0.05A (ada aktivitas), jalankan gelombang
+    if (currentAmps > 0.05) {
+        waterElement.classList.add('wave-active');
+    } else {
+        // Jika standby (arus ~0), hentikan gelombang
+        waterElement.classList.remove('wave-active');
+    }
+}
+
+    // 3. Update Warna
+    if ((d.a || 0) > 1) {
+        waterElement.setAttribute('fill', '#10b981'); // Hijau (Charging)
+    } else if ((d.a || 0) < -1) {
+        waterElement.setAttribute('fill', '#3b82f6'); // Biru (Discharging)
+    } else {
+        waterElement.setAttribute('fill', '#f59e0b'); // Amber (Standby)
+    }
+
+
+    const valUP = d.uP || 0;
+    const txtLeft = document.getElementById('usageLeft');
+    const txtRight = document.getElementById('usageRight');
+
+    if (valUP > 0) {
+        // Jika Positif: Tampilkan di Kiri (Charger), Sembunyikan Kanan
+        txtLeft.textContent = valUP.toFixed(1) + '%';
+        txtLeft.classList.replace('opacity-0', 'opacity-100');
+        txtRight.classList.replace('opacity-100', 'opacity-0');
+    } else if (valUP < 0) {
+        // Jika Negatif: Tampilkan di Kanan (Load), Sembunyikan Kiri
+        // Menggunakan Math.abs agar tanda minus tidak dobel jika ingin tampilan bersih
+        txtRight.textContent = Math.abs(valUP).toFixed(1) + '%';
+        txtRight.classList.replace('opacity-0', 'opacity-100');
+        txtLeft.classList.replace('opacity-100', 'opacity-0');
+    } else {
+        // Jika Nol: Sembunyikan keduanya
+        txtLeft.classList.replace('opacity-100', 'opacity-0');
+        txtRight.classList.replace('opacity-100', 'opacity-0');
+    }
+
+           // 2. Logika Kabel Kiri (Charger) - Menggunakan d.rC atau d.rChg dan d.a
+const pathCharger = document.getElementById('pathCharger');
+const nodeCharger = document.getElementById('nodeCharger');
+
+// Note: Arus masuk (charging) biasanya positif pada variabel d.a
+if ((d.rC > 0.5 || d.rChg === 1) && (d.a || 0) > 0.01) {
+    pathCharger.setAttribute('class', 'flow-line flowing');
+    pathCharger.style.stroke = '#10b981'; 
+    nodeCharger.style.color = '#10b981';
+} else {
+    pathCharger.setAttribute('class', 'line-off');
+    pathCharger.style.stroke = '';
+    nodeCharger.style.color = '';
+}
+
+// 3. Logika Kabel Kanan (Load) - Menggunakan d.rD atau d.rDis dan d.p
+const pathLoad = document.getElementById('pathLoad');
+const nodeLoad = document.getElementById('nodeLoad');
+
+// Arus beban/power biasanya d.p > 0
+if ((d.rD > 0.5 || d.rDis === 1) && (d.p || 0) < 0.1) {
+    pathLoad.setAttribute('class', 'flow-line flowing');
+    pathLoad.style.stroke = '#3b82f6'; 
+    nodeLoad.style.color = '#3b82f6';
+} else {
+    pathLoad.setAttribute('class', 'line-off');
+    pathLoad.style.stroke = '';
+    nodeLoad.style.color = '';
+}
+
         }
 
         window.handleDurationChange = async () => {
