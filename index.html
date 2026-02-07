@@ -620,12 +620,22 @@ if (waterElement) {
 const pathCharger = document.getElementById('pathCharger');
 const nodeCharger = document.getElementById('nodeCharger');
 
-// Note: Arus masuk (charging) biasanya positif pada variabel d.a
-if ((d.rC > 0.5 || d.rChg === 1) && (d.a || 0) > 1) {
-    pathCharger.setAttribute('class', 'flow-line flowing');
-    pathCharger.style.stroke = '#10b981'; 
+// 1. Kondisi Utama: Jika d.chg aktif (kabel menyala)
+if (d.rChg === 1) {
+    pathCharger.style.stroke = '#10b981'; // Warna hijau menyala
     nodeCharger.style.color = '#10b981';
+
+    // Cek apakah ada arus masuk (d.a > 1)
+    if ((d.a || 0) > 1) {
+        // Jika ada arus: Berikan class flowing (bergerak)
+        pathCharger.setAttribute('class', 'flow-line flowing');
+    } else {
+        // Jika tidak ada arus: Kabel menyala tapi diam (hapus class flowing)
+        pathCharger.setAttribute('class', 'flow-line'); 
+    }
+
 } else {
+    // 2. Kondisi d.chg === 0: Matikan semua
     pathCharger.setAttribute('class', 'line-off');
     pathCharger.style.stroke = '';
     nodeCharger.style.color = '';
@@ -635,12 +645,22 @@ if ((d.rC > 0.5 || d.rChg === 1) && (d.a || 0) > 1) {
 const pathLoad = document.getElementById('pathLoad');
 const nodeLoad = document.getElementById('nodeLoad');
 
-// Arus beban/power biasanya d.p > 0
-if ((d.rD > 0.5 || d.rDis === 1) && (d.a || 0) < -1) {
-    pathLoad.setAttribute('class', 'flow-line flowing');
-    pathLoad.style.stroke = '#3b82f6'; 
+// 1. Kondisi Utama: Jika d.rDis aktif (kabel beban menyala)
+if (d.rDis === 1) {
+    pathLoad.style.stroke = '#3b82f6'; // Warna biru (beban)
     nodeLoad.style.color = '#3b82f6';
+
+    // Cek apakah ada arus keluar/beban (d.a < -1)
+    if ((d.a || 0) < -1) {
+        // Jika ada arus: Berikan class flowing (bergerak)
+        pathLoad.setAttribute('class', 'flow-line flowing');
+    } else {
+        // Jika tidak ada arus: Kabel menyala biru tapi diam
+        pathLoad.setAttribute('class', 'flow-line');
+    }
+
 } else {
+    // 2. Kondisi d.rDis === 0: Matikan semua
     pathLoad.setAttribute('class', 'line-off');
     pathLoad.style.stroke = '';
     nodeLoad.style.color = '';
