@@ -73,11 +73,11 @@
             <div class="dibi-box"><span class="dibi-text">dibi</span></div>
             <div>
                 <h1 class="text-lg font-bold tracking-tighter">CORE<span class="text-amber-500">.</span>REMOTE</h1>
-                <p id="lastUpdate" class="text-[8px] font-mono text-slate-500 uppercase tracking-widest">Connecting Cloud...</p>
+                <p id="lastUpdate" class="text-[10px] font-mono text-slate-500 uppercase tracking-widest">Connecting Cloud...</p>
             </div>
         </div>
         <div class="flex items-center gap-3">
-            <div id="statusPulse" class="h-2 w-2 rounded-full bg-amber-500 animate-pulse"></div>
+            <div id="statusPulse" class="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
             <button onclick="openCfg()" class="p-2 bg-white/5 rounded-xl border border-white/10">⚙️</button>
         </div>
     </nav>
@@ -190,12 +190,10 @@
     </div>
 </div>
 
-</div>
+                   </div>
 
-                    <div class="grid grid-cols-2 gap-4">
-                        <div id="rChg" class="glass-panel p-4 flex items-center justify-center gap-3 opacity-20"><span class="text-lg">⚡</span><span class="label-tech">Charging</span></div>
-                        <div id="rDis" class="glass-panel p-4 flex items-center justify-center gap-3 opacity-20"><span class="text-lg">🔌</span><span class="label-tech">Discharge</span></div>
-                    </div>
+                    
+
 
                     <div id="errorCard" class="glass-panel p-6 border-l-4 border-emerald-500 flex flex-col gap-4">
                         <div class="flex items-center justify-between">
@@ -215,11 +213,12 @@
             </div>
 
             <div class="tab-page">
+
                 <div id="tab-cells" class="space-y-4">
                     <div class="glass-panel p-6">
                         <div class="flex justify-between items-center mb-6">
                             <span class="label-tech">Cell Voltages</span>
-                            <span id="vTotal" class="big-number text-xl text-white tracking-wider">0.00V</span>
+                          
                         </div>
                         <div class="grid grid-cols-2 gap-3">
                             <div class="bg-white/5 p-3 rounded-xl text-center border border-white/5">
@@ -241,35 +240,36 @@
                         </div>
                     </div>
 
-                    <div class="glass-panel p-6">
-                        <span class="label-tech">Capacity Cycle</span>
-                        <div class="grid grid-cols-2 gap-4 mt-6 items-end">
-                            <div class="flex flex-col gap-1.5">
-                                <div class="flex items-center gap-1 opacity-50 uppercase tracking-tighter text-[7px] font-mono">
-                                    <span>Wh Now</span> <span class="opacity-30">/</span> <span>Ah Now</span>
-                                </div>
-                                <div class="flex items-baseline gap-1 font-mono">
-                                    <p id="whNow" class="big-number text-xl text-blue-400 leading-none">0</p>
-                                    <span class="text-blue-400/30 text-lg">/</span>
-                                    <p id="ahNow" class="big-number text-xl text-blue-400 leading-none">0</p>
-                                </div>
-                            </div>
-                            <div class="text-right flex flex-col gap-1.5">
-                                <p class="label-tech !text-[7px] opacity-50 uppercase tracking-tighter">Health (SOH)</p>
-                                <p id="soh" class="big-number text-xl text-emerald-400 leading-none">100%</p>
-                            </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div id="rChg" class="glass-panel p-4 flex items-center justify-center gap-3 opacity-20"><span class="text-lg">⚡</span><span class="label-tech">Charging</span></div>
+                        <div id="rDis" class="glass-panel p-4 flex items-center justify-center gap-3 opacity-20"><span class="text-lg">🔌</span><span class="label-tech">Discharge</span></div>
+                    </div>
+
+
+                    <div class="glass-panel p-4 bg-gradient-to-br from-white/5 to-transparent">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="h-3 w-1 bg-slate-400 rounded-full"></div>
+                            <span class="label-tech !text-[9px] tracking-widest opacity-70">Current Capacity</span>
                         </div>
-                        <div class="mt-6 pt-4 border-t border-white/10 flex justify-between items-center">
-                            <div class="flex flex-col gap-1">
-                                <p class="label-tech !text-[7px] opacity-50">Total Cycles</p>
-                                <p id="cycles" class="big-number text-lg">0</p>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-black/20 p-3 rounded-xl border border-white/5">
+                                <p class="label-tech !text-[7px] opacity-50 mb-1 uppercase">(Energy)</p>
+                                <div class="flex items-baseline gap-1">
+                                    <p id="whNow" class="big-number text-xl text-slate-300">0</p>
+                                    <span class="text-[10px] text-slate-500 font-mono">Wh</span>
+                                </div>
                             </div>
-                            <div class="text-right flex flex-col gap-1">
-                                <p class="label-tech !text-[7px] opacity-50">Daily Usage</p>
-                                <p id="usagePer" class="big-number text-lg text-amber-500">0%</p>
+                            <div class="bg-black/20 p-3 rounded-xl border border-white/5 text-right">
+                                <p class="label-tech !text-[7px] opacity-50 mb-1 uppercase">(Amp)</p>
+                                <div class="flex items-baseline gap-1 justify-end">
+                                    <p id="ahNow" class="big-number text-xl text-slate-300">0</p>
+                                    <span class="text-[10px] text-slate-500 font-mono">Ah</span>
+                                </div>
                             </div>
                         </div>
                     </div>
+
+                    
                 </div>
             </div>
 
@@ -288,7 +288,44 @@
                             </div>
                         </div>
                     </div>
-                    <div class="glass-panel p-4 bg-gradient-to-br from-white/5 to-transparent">
+
+                   
+
+
+                </div>
+            </div>
+
+            <div class="tab-page">
+                <div id="tab-charts" class="space-y-4">
+                    <div class="glass-panel p-4">
+                        <div class="flex justify-between items-center mb-4">
+
+                            <select id="chartDuration" onchange="window.handleDurationChange()" class="bg-black/50 border border-white/10 rounded-lg px-2 py-1 text-[10px] label-tech text-white outline-none">
+                                <option value="live">Live Stream</option>
+                                <option value="12h">Last 12 Hours</option>
+                                <option value="24h">Last 24 Hours</option>
+                                <option value="7d">Last 7 Days</option>
+                                
+                            </select>
+                      
+                            <div id="progressContainer" class="hidden w-20 h-1 bg-white/5 rounded-full overflow-hidden">
+                                <div id="syncProgressBar" class="h-full bg-amber-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="h-72 relative"><canvas id="unifiedChart"></canvas></div>
+                        <div id="chartFilters" class="flex flex-wrap gap-2 mt-4 justify-center">
+                            <button onclick="toggleDataset(0)" id="btn-0" class="px-2 py-1 rounded-full border border-blue-500/50 text-[7px] font-bold text-blue-400">LOAD</button>
+                            <button onclick="toggleDataset(1)" id="btn-1" class="px-2 py-1 rounded-full border border-emerald-500/50 text-[7px] font-bold text-emerald-400">VOLT</button>
+                            <button onclick="toggleDataset(2)" id="btn-2" class="px-2 py-1 rounded-full border border-orange-500/50 text-[7px] font-bold text-orange-400">AMP</button>
+                            <button onclick="toggleDataset(3)" id="btn-3" class="px-2 py-1 rounded-full border border-red-500/50 text-[7px] font-bold text-red-400 ">T-MOS</button>
+                            <button onclick="toggleDataset(4)" id="btn-4" class="px-2 py-1 rounded-full border border-purple-500/50 text-[7px] font-bold text-purple-400 ">T-BATT</button>
+                        </div>
+                        <button onclick="resetLocalDB()" class="bg-red-500/20 hover:bg-red-500/40 text-red-500 text-[10px] px-2 py-1 rounded border border-red-500/50 transition-all">
+                                     Reset DB
+                            </button>
+                    </div>
+
+                     <div class="glass-panel p-4 bg-gradient-to-br from-white/5 to-transparent">
                         <div class="flex items-center gap-2 mb-3">
                             <div class="h-3 w-1 bg-slate-400 rounded-full"></div>
                             <span class="label-tech !text-[9px] tracking-widest opacity-70">Factory Design Specs</span>
@@ -310,60 +347,75 @@
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <div class="tab-page">
-                <div id="tab-charts" class="space-y-4">
-                    <div class="glass-panel p-4">
-                        <div class="flex justify-between items-center mb-4">
-
-                            <select id="chartDuration" onchange="window.handleDurationChange()" class="bg-black/50 border border-white/10 rounded-lg px-2 py-1 text-[10px] label-tech text-white outline-none">
-                                <option value="live">Live Stream</option>
-                                <option value="12h">Last 12 Hours</option>
-                                <option value="24h">Last 24 Hours</option>
-                                <option value="7d">Last 7 Days</option>
-                                 <option value="resetLocalDB()">Reset DB</option>
-                            </select>
-                      
-                            <div id="progressContainer" class="hidden w-20 h-1 bg-white/5 rounded-full overflow-hidden">
-                                <div id="syncProgressBar" class="h-full bg-amber-500" style="width: 0%"></div>
+                     <div class="glass-panel p-4 bg-gradient-to-br from-white/5 to-transparent">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="h-3 w-1 bg-slate-400 rounded-full"></div>
+                            <span class="label-tech !text-[9px] tracking-widest opacity-70">Current Capacity Charging</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-black/20 p-3 rounded-xl border border-white/5">
+                                <p class="label-tech !text-[7px] opacity-50 mb-1 uppercase">Current Capacity (Energy)</p>
+                                <div class="flex items-baseline gap-1">
+                                    <p id="whPos" class="big-number text-xl text-slate-300">0</p>
+                                    <span class="text-[10px] text-slate-500 font-mono">Wh</span>
+                                </div>
+                            </div>
+                            <div class="bg-black/20 p-3 rounded-xl border border-white/5 text-right">
+                                <p class="label-tech !text-[7px] opacity-50 mb-1 uppercase">Current Capacity (Amp)</p>
+                                <div class="flex items-baseline gap-1 justify-end">
+                                    <p id="capChg" class="big-number text-xl text-slate-300">0</p>
+                                    <span class="text-[10px] text-slate-500 font-mono">Ah</span>
+                                </div>
                             </div>
                         </div>
-                        <div class="h-72 relative"><canvas id="unifiedChart"></canvas></div>
-                        <div id="chartFilters" class="flex flex-wrap gap-2 mt-4 justify-center">
-                            <button onclick="toggleDataset(0)" id="btn-0" class="px-2 py-1 rounded-full border border-blue-500/50 text-[7px] font-bold text-blue-400">LOAD</button>
-                            <button onclick="toggleDataset(1)" id="btn-1" class="px-2 py-1 rounded-full border border-emerald-500/50 text-[7px] font-bold text-emerald-400">VOLT</button>
-                            <button onclick="toggleDataset(2)" id="btn-2" class="px-2 py-1 rounded-full border border-orange-500/50 text-[7px] font-bold text-orange-400">AMP</button>
-                            <button onclick="toggleDataset(3)" id="btn-3" class="px-2 py-1 rounded-full border border-red-500/50 text-[7px] font-bold text-red-400 ">T-MOS</button>
-                            <button onclick="toggleDataset(4)" id="btn-4" class="px-2 py-1 rounded-full border border-purple-500/50 text-[7px] font-bold text-purple-400 ">T-BATT</button>
-                        </div>
-                        <button onclick="resetLocalDB()" class="bg-red-500/20 hover:bg-red-500/40 text-red-500 text-[10px] px-2 py-1 rounded border border-red-500/50 transition-all">
-                                     Reset DB
-                            </button>
                     </div>
 
-                    <div class="glass-panel p-6 grid grid-cols-2 gap-4">
-                        <div class="flex flex-col gap-1.5 border-r border-white/5">
-                            <div class="flex items-center gap-1 opacity-60 uppercase tracking-tighter text-[7px] font-mono text-emerald-500">
-                                <span>Wh In (+)</span> <span class="opacity-30">/</span> <span>Ah In</span>
+                    <div class="glass-panel p-4 bg-gradient-to-br from-white/5 to-transparent">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="h-3 w-1 bg-slate-400 rounded-full"></div>
+                            <span class="label-tech !text-[9px] tracking-widest opacity-70">Current Capacity Discharging</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-black/20 p-3 rounded-xl border border-white/5">
+                                <p class="label-tech !text-[7px] opacity-50 mb-1 uppercase">Current Capacity (Energy)</p>
+                                <div class="flex items-baseline gap-1">
+                                    <p id="whNeg" class="big-number text-xl text-slate-300">0</p>
+                                    <span class="text-[10px] text-slate-500 font-mono">Wh</span>
+                                </div>
                             </div>
-                            <div class="flex items-baseline gap-1 font-mono">
-                                <p id="whPos" class="big-number text-xl text-emerald-400 leading-none">0</p>
-                                <span class="text-emerald-400/30 text-lg">/</span>
-                                <p id="capChg" class="big-number text-xl text-emerald-400 leading-none">0</p>
+                            <div class="bg-black/20 p-3 rounded-xl border border-white/5 text-right">
+                                <p class="label-tech !text-[7px] opacity-50 mb-1 uppercase">Current Capacity (Amp)</p>
+                                <div class="flex items-baseline gap-1 justify-end">
+                                    <p id="capDis" class="big-number text-xl text-slate-300">0</p>
+                                    <span class="text-[10px] text-slate-500 font-mono">Ah</span>
+                                </div>
                             </div>
                         </div>
-                        <div class="flex flex-col gap-1.5 text-right items-end">
-                            <div class="flex items-center gap-1 opacity-60 uppercase tracking-tighter text-[7px] font-mono text-red-500">
-                                <span>Wh Out (-)</span> <span class="opacity-30">/</span> <span>Ah Out</span>
+                    </div>
+
+                    <div class="glass-panel p-4 bg-gradient-to-br from-white/5 to-transparent">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="h-3 w-1 bg-slate-400 rounded-full"></div>
+                            <span class="label-tech !text-[9px] tracking-widest opacity-70">Status Of Health Battery</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-black/20 p-3 rounded-xl border border-white/5">
+                                <p class="label-tech !text-[7px] opacity-50 mb-1 uppercase">Health</p>
+                                <div class="flex items-baseline gap-1">
+                                    <p id="soh" class="big-number text-xl text-slate-300">0</p>
+                                    <span class="text-[10px] text-slate-500 font-mono">%</span>
+                                </div>
                             </div>
-                            <div class="flex items-baseline gap-1 font-mono">
-                                <p id="whNeg" class="big-number text-xl text-red-400 leading-none">0</p>
-                                <span class="text-red-400/30 text-lg">/</span>
-                                <p id="capDis" class="big-number text-xl text-red-400 leading-none">0</p>
+                            <div class="bg-black/20 p-3 rounded-xl border border-white/5 text-right">
+                                <p class="label-tech !text-[7px] opacity-50 mb-1 uppercase">Cycle Count</p>
+                                <div class="flex items-baseline gap-1 justify-end">
+                                    <p id="cycles" class="big-number text-xl text-slate-300">0</p>
+                                </div>
                             </div>
                         </div>
+                    </div>
+                        
                     </div>
                 </div>
             </div>
@@ -442,7 +494,20 @@
         let liveMode = true;
         let lastErrorCode = -1;
 
+       let lastDataTS = Date.now();
 
+       // Cek status setiap 3 detik
+setInterval(() => {
+    const pulse = document.getElementById('statusPulse');
+    const isTimeout = (Date.now() - lastDataTS) > 10000; // Cek jika lebih dari 10 detik
+
+    if (isTimeout) {
+        pulse.classList.replace('bg-green-500', 'bg-red-500');
+        document.getElementById('lastUpdate').innerText = "OFFLINE";
+    } else {
+        pulse.classList.replace('bg-red-500', 'bg-green-500');
+    }
+}, 3000);
 
         // Fungsi untuk menghapus seluruh data lokal di IndexedDB
     window.resetLocalDB = async () => {
@@ -610,6 +675,7 @@ if(saved) {
             }
 
             if(d.ts) {
+                lastDataTS = Date.now();
                 document.getElementById('lastUpdate').innerText = new Date(d.ts).toLocaleTimeString();
                 db.history.add({ ts: d.ts, w: d.p || 0, v: d.v || 0, a: d.a || 0, t: d.tM || 0, tb: d.tB || 0 });
             }
@@ -891,7 +957,7 @@ function handleGesture() {
             switchTab(tabs[currentIndex - 1]);
         }
     }
-}
+}        
 
         function update(id, v) { const e = document.getElementById(id); if(e) e.innerText = v; }
     </script>
