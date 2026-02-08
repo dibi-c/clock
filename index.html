@@ -107,18 +107,25 @@
             /* Teks Label */
             .usage-text { font-family: sans-serif; font-weight: 800; font-size: 14px; transition: opacity 0.5s ease; fill: currentColor; }
 
-            /* PERBAIKAN: Animasi Air Seamless ke Kanan */
-            @keyframes waveMove {
-                from { transform: translateX(-160px); }
-                to { transform: translateX(0px); }
-            }
-            .wave-active { 
-                animation: waveMove 3s linear infinite; 
-            }
+                        /* Update Keyframes untuk menyertakan posisi Y dari JS */
+@keyframes waveMove {
+    from { 
+        transform: translateY(var(--ty, 0px)) translateX(-160px); 
+    }
+    to { 
+        transform: translateY(var(--ty, 0px)) translateX(0px); 
+    }
+}
 
-            #waterWave {
-                transition: transform 1s ease-out, fill 0.5s ease;
-            }
+.wave-active { 
+    /* Hilangkan transform tunggal agar tidak bentrok */
+    animation: waveMove 3s linear infinite; 
+}
+
+#waterWave {
+    /* Hanya transition untuk fill, transform diatur oleh keyframe/JS */
+    transition: fill 0.5s ease;
+}
         </style>
 
         <clipPath id="circleMask">
@@ -164,10 +171,25 @@
 
              </div>
                         
-    <div class="grid grid-cols-2 gap-8 mt-8 w-full border-t border-white/5 pt-6 text-center">
-        <div><p class="label-tech">Current (A)</p><p class="big-number text-2xl text-amber-500" id="current">0.00</p></div>
-        <div class="border-l border-white/5"><p class="label-tech">Load (W)</p><p class="big-number text-2xl text-blue-500" id="power">0</p></div>
+   <div class="relative mt-8 w-full border-t border-white/5 pt-6">
+    <div class="grid grid-cols-2 text-center">
+        <div class="pr-4">
+            <p class="label-tech">Current (A)</p>
+            <p class="big-number text-2xl text-amber-500" id="current">0.00</p>
+        </div>
+
+        <div class="border-l border-white/5 pl-4">
+            <p class="label-tech">Voltage (V)</p>
+            <p class="big-number text-2xl text-emerald-500" id="vTotal">220</p>
+        </div>
     </div>
+
+    <div class="absolute left-1/2 -translate-x-1/2 -bottom-8 text-center w-full">
+        <p class="label-tech">Load (W)</p>
+        <p class="big-number text-2xl text-blue-500" id="power">0</p>
+    </div>
+</div>
+
 </div>
 
                     <div class="grid grid-cols-2 gap-4">
@@ -295,12 +317,15 @@
                 <div id="tab-charts" class="space-y-4">
                     <div class="glass-panel p-4">
                         <div class="flex justify-between items-center mb-4">
+
                             <select id="chartDuration" onchange="window.handleDurationChange()" class="bg-black/50 border border-white/10 rounded-lg px-2 py-1 text-[10px] label-tech text-white outline-none">
                                 <option value="live">Live Stream</option>
                                 <option value="12h">Last 12 Hours</option>
                                 <option value="24h">Last 24 Hours</option>
                                 <option value="7d">Last 7 Days</option>
+                                 <option value="resetLocalDB()">Reset DB</option>
                             </select>
+                      
                             <div id="progressContainer" class="hidden w-20 h-1 bg-white/5 rounded-full overflow-hidden">
                                 <div id="syncProgressBar" class="h-full bg-amber-500" style="width: 0%"></div>
                             </div>
@@ -313,6 +338,9 @@
                             <button onclick="toggleDataset(3)" id="btn-3" class="px-2 py-1 rounded-full border border-red-500/50 text-[7px] font-bold text-red-400 ">T-MOS</button>
                             <button onclick="toggleDataset(4)" id="btn-4" class="px-2 py-1 rounded-full border border-purple-500/50 text-[7px] font-bold text-purple-400 ">T-BATT</button>
                         </div>
+                        <button onclick="resetLocalDB()" class="bg-red-500/20 hover:bg-red-500/40 text-red-500 text-[10px] px-2 py-1 rounded border border-red-500/50 transition-all">
+                                     Reset DB
+                            </button>
                     </div>
 
                     <div class="glass-panel p-6 grid grid-cols-2 gap-4">
@@ -405,8 +433,8 @@
     </script>
 
     <script type="module">
+        import { getDatabase, ref, onValue, query as rtdbQuery, limitToLast, get, orderByChild, startAt, endAt } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-        import { getDatabase, ref, onValue, query as rtdbQuery, limitToLast, get } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
 
         const db = new Dexie("BMS_History_DB");
         db.version(1).stores({ history: '++id, ts, w, v, a, t, tb' });
@@ -416,7 +444,35 @@
 
 
 
+        // Fungsi untuk menghapus seluruh data lokal di IndexedDB
+    window.resetLocalDB = async () => {
+    if (confirm("Apakah Anda yakin ingin menghapus semua data history lokal? Data di Cloud Firebase TIDAK akan terhapus.")) {
+        try {
+            const updateLabel = document.getElementById('lastUpdate');
+            updateLabel.innerText = "Resetting Database...";
+            
+            // Mengosongkan table history di Dexie
+            await db.history.clear();
+            
+            alert("Database Lokal Berhasil Dikosongkan!");
+            
+            // Jika sedang tidak mode live, bersihkan grafik
+            if (!liveMode) {
+                unifiedChart.data.labels = [];
+                unifiedChart.data.datasets.forEach(ds => ds.data = []);
+                unifiedChart.update();
+            }
+            
+            // Jalankan sinkronisasi ulang dari awal jika perlu
+            const rtdb = getDatabase();
+            if(rtdb) syncFromRTDB(rtdb);
 
+        } catch (err) {
+            console.error("Failed to reset DB:", err);
+            alert("Gagal menghapus database.");
+        }
+    }
+};
 
 
 
@@ -453,52 +509,59 @@
             unifiedChart.update();
         };
 
-        const saved = localStorage.getItem('bms_v48_cloud');
-        if(saved) {
-            try {
-                const config = JSON.parse(saved);
-                const app = initializeApp(config);
-                const rtdb = getDatabase(app);
-                
-                const checkAndSync = async () => {
-                    const localCount = await db.history.count();
-                    if (localCount < 5) await syncFromRTDB(rtdb);
-                };
-                checkAndSync();
+       const saved = localStorage.getItem('bms_v48_cloud');
+if(saved) {
+    try {
+        const config = JSON.parse(saved);
+        const app = initializeApp(config);
+        const rtdb = getDatabase(app);
+        
+        // Jalankan sinkronisasi otomatis setiap kali app dibuka/reload
+        syncFromRTDB(rtdb);
 
-                onValue(ref(rtdb, 'bms_live'), (snap) => { if(snap.val()) updateUI(snap.val()); });
-            } catch(e) { console.error(e); }
-        } else { openCfg(); }
+        onValue(ref(rtdb, 'bms_live'), (snap) => { 
+            if(snap.val()) updateUI(snap.val()); 
+        });
+    } catch(e) { console.error(e); }
+  } else { openCfg(); }
 
-        async function syncFromRTDB(rtdb) {
-            const updateLabel = document.getElementById('lastUpdate');
-            const progressContainer = document.getElementById('progressContainer');
-            const progressBar = document.getElementById('syncProgressBar');
-            updateLabel.innerText = "Requesting Data...";
-            progressContainer.classList.remove('hidden');
-            try {
-                const historyRef = ref(rtdb, 'bms_history');
-                const recentQuery = rtdbQuery(historyRef, limitToLast(50000)); 
-                const snapshot = await get(recentQuery);
-                if (snapshot.exists()) {
-                    const cloudData = [];
-                    const dataObj = snapshot.val();
-                    const keys = Object.keys(dataObj);
-                    const totalData = keys.length;
-                    keys.forEach((key, index) => {
-                        const d = dataObj[key];
-                        if (d.ts) {
-                            cloudData.push({ ts: d.ts, w: Number((d.p || 0).toFixed(2)), v: Number((d.v || 0).toFixed(2)), a: Number((d.a || 0).toFixed(2)), t: Number((d.tM || 0).toFixed(2)), tb: Number((d.tB || 0).toFixed(2)) });
-                        }
-                        if (index % 1000 === 0) progressBar.style.width = Math.round((index / totalData) * 100) + '%';
-                    });
-                    await db.history.bulkPut(cloudData);
-                    updateLabel.innerText = "Sync Complete";
-                    if (!liveMode) window.handleDurationChange();
-                }
-            } catch (err) { console.error(err); }
-            finally { setTimeout(() => progressContainer.classList.add('hidden'), 5000); }
+   async function syncFromRTDB(rtdb) {
+    const updateLabel = document.getElementById('lastUpdate');
+    updateLabel.innerText = "Checking Sync...";
+    
+    try {
+        // 1. Hapus data yang sudah lebih dari 7 hari agar DB tetap ringan
+        const tujuhHariLalu = Date.now() - (7 * 24 * 60 * 60 * 1000);
+        await db.history.where('ts').below(tujuhHariLalu).delete();
+
+        // 2. Ambil TS terakhir di lokal untuk tahu kapan terakhir sinkron
+        const lastEntry = await db.history.orderBy('ts').last();
+        const startTime = lastEntry ? lastEntry.ts + 1 : Date.now() - (7 * 24 * 60 * 60 * 1000);
+
+        const historyRef = ref(rtdb, 'bms_history');
+        const syncQuery = rtdbQuery(historyRef, orderByChild('ts'), startAt(startTime));
+        const snapshot = await get(syncQuery);
+        
+        if (snapshot.exists()) {
+            const cloudData = [];
+            snapshot.forEach((child) => {
+                const d = child.val();
+                cloudData.push({ 
+                    ts: d.ts, 
+                    w: Number((d.p || 0).toFixed(2)), 
+                    v: Number((d.v || 0).toFixed(2)), 
+                    a: Number((d.a || 0).toFixed(2)), 
+                    t: Number((d.tM || 0).toFixed(2)), 
+                    tb: Number((d.tB || 0).toFixed(2)) 
+                });
+            });
+            if (cloudData.length > 0) await db.history.bulkPut(cloudData);
+            updateLabel.innerText = "Sync Complete";
         }
+    } catch (err) {
+        console.error("Sync Error:", err);
+    }
+}
 
         function updateUI(d) {
             updateTimeRemaining(d.cChg || 0, d.cDis || 0);
@@ -566,32 +629,31 @@
             }
 
 const waterElement = document.getElementById('waterWave');
-const currentAmps = d.a || 0; // Nilai arus (positif = charge, negatif = discharge)
-const socValue = d.soc || 0;  // Nilai SoC (0-100)
+const currentAmps = d.a || 0;
+const absAmps = Math.abs(currentAmps);
 
 if (waterElement) {
-    // 1. Update Tinggi Air Berdasarkan SoC
-    // Rumus: Semakin tinggi SoC, translateY semakin kecil (naik ke atas)
-    // Jika 100% -> -80px (penuh), Jika 0% -> 80px (kosong)
-    const waterLevel = 80 - (160 * (socValue / 100));
-    waterElement.style.transform = `translateY(${waterLevel}px)`;
-    waterElement.style.transition = "transform 0.5s ease-in-out"; // Agar pergerakan smooth
+    // 1. Hitung level Y berdasarkan SoC
+    const waterLevel = 80 - (160 * (d.soc / 100));
 
-    // 2. Kontrol Animasi & Warna Berdasarkan Arus
-    if (currentAmps > 0.5) { 
-        // --- CHARGING (Mengisi) ---
+    // 2. Logika Warna
+    let fillContext = '#f59e0b'; // Default Amber
+    if (currentAmps > 1) fillContext = '#10b981'; // Hijau
+    else if (currentAmps < -1) fillContext = '#3b82f6'; // Biru
+    
+    waterElement.setAttribute('fill', fillContext);
+
+    // 3. SOLUSI UTAMA: Gabungkan Y (SoC) ke dalam CSS Variable
+    // Kita simpan nilai Y di variabel agar CSS Animation tetap bisa membacanya
+    waterElement.style.setProperty('--ty', `${waterLevel}px`);
+
+    // 4. Kontrol Animasi
+    if (absAmps > 0.5) {
         waterElement.classList.add('wave-active');
-        waterElement.setAttribute('fill', '#10b981'); // Hijau
-        
-    } else if (currentAmps < -0.5) { 
-        // --- DISCHARGING (Menguras) ---
-        waterElement.classList.add('wave-active');
-        waterElement.setAttribute('fill', '#3b82f6'); // Biru
-        
     } else {
-        // --- STANDBY (Diam) ---
         waterElement.classList.remove('wave-active');
-        waterElement.setAttribute('fill', '#f59e0b'); // Amber
+        // Jika tidak aktif, kita tetap harus menjaga posisi Y-nya
+        waterElement.style.transform = `translateY(${waterLevel}px)`;
     }
 }
 
@@ -670,36 +732,88 @@ if (d.rD === 1) {
 
         }
 
-        window.handleDurationChange = async () => {
-            const mode = document.getElementById('chartDuration').value;
-            const progress = document.getElementById('syncProgressBar'), container = document.getElementById('progressContainer');
+  window.handleDurationChange = async () => {
+    const mode = document.getElementById('chartDuration').value;
+    const progress = document.getElementById('syncProgressBar'); // Ambil element bar
+    const container = document.getElementById('progressContainer');
+    const updateLabel = document.getElementById('lastUpdate');
+    
+    if (mode === 'live') { 
+        liveMode = true; 
+        unifiedChart.data.labels = [];
+        unifiedChart.data.datasets.forEach(ds => ds.data = []);
+        unifiedChart.update();
+        return; 
+    }
+    
+    liveMode = false;
+    // Tampilkan container progress
+    container.classList.remove('hidden');
+    progress.style.width = "10%"; // Mulai dari 10%
+    
+    const now = Date.now();
+    let durationMs = mode === '12h' ? 43200000 : mode === '24h' ? 86400000 : 604800000;
+    let startTime = now - durationMs;
+
+    try {
+        let localData = await db.history.where('ts').aboveOrEqual(startTime).toArray();
+        progress.style.width = "30%"; // Data lokal terbaca
+
+        if (localData.length === 0 || localData[0].ts > (startTime + 300000)) { 
+            updateLabel.innerText = "Downloading Gaps...";
+            progress.style.width = "50%"; // Mulai kontak Firebase
+
+            const fetchEndTime = localData.length > 0 ? localData[0].ts - 1 : now;
+            const historyRef = ref(getDatabase(), 'bms_history');
+            const q = rtdbQuery(historyRef, orderByChild('ts'), startAt(startTime), endAt(fetchEndTime));
             
-            if (mode === 'live') { 
-                liveMode = true; 
-                unifiedChart.data.labels = [];
-                unifiedChart.data.datasets.forEach(ds => ds.data = []);
-                unifiedChart.update();
-                return; 
+            const snap = await get(q);
+            progress.style.width = "80%"; // Data diterima
+
+            if (snap.exists()) {
+                const patchData = [];
+                snap.forEach(child => {
+                    const d = child.val();
+                    patchData.push({
+                        ts: d.ts, w: d.p, v: d.v, a: d.a, t: d.tM, tb: d.tB
+                    });
+                });
+                await db.history.bulkPut(patchData);
+                localData = await db.history.where('ts').aboveOrEqual(startTime).toArray();
             }
-            
-            liveMode = false; container.classList.remove('hidden');
-            const now = Date.now();
-            let start = mode === '12h' ? now - 43200000 : mode === '24h' ? now - 86400000 : now - 604800000;
-            
-            const oldDataThreshold = now - (14 * 86400000);
-            await db.history.where('ts').below(oldDataThreshold).delete();
-            
-            const allData = await db.history.where('ts').aboveOrEqual(start).toArray();
-            unifiedChart.data.labels = allData.map(d => new Date(d.ts).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}));
-            unifiedChart.data.datasets[0].data = allData.map(d => d.w);
-            unifiedChart.data.datasets[1].data = allData.map(d => d.v);
-            unifiedChart.data.datasets[2].data = allData.map(d => d.a);
-            unifiedChart.data.datasets[3].data = allData.map(d => d.t);
-            unifiedChart.data.datasets[4].data = allData.map(d => d.tb);
-            
-            unifiedChart.update();
-            setTimeout(() => container.classList.add('hidden'), 1000);
-        };
+        }
+
+        progress.style.width = "90%"; // Proses Filter/Downsampling
+
+        const filteredData = localData.filter((_, index) => {
+            if (mode === '12h') return index % 5 === 0;
+            if (mode === '24h') return index % 10 === 0;
+            if (mode === '7d') return index % 60 === 0;
+            return true;
+        });
+
+        unifiedChart.data.labels = filteredData.map(d => new Date(d.ts).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}));
+        unifiedChart.data.datasets[0].data = filteredData.map(d => d.w);
+        unifiedChart.data.datasets[1].data = filteredData.map(d => d.v);
+        unifiedChart.data.datasets[2].data = filteredData.map(d => d.a);
+        unifiedChart.data.datasets[3].data = filteredData.map(d => d.t);
+        unifiedChart.data.datasets[4].data = filteredData.map(d => d.tb);
+        
+        unifiedChart.update('none');
+        progress.style.width = "100%"; // Selesai
+        updateLabel.innerText = "View: " + mode;
+
+    } catch (err) {
+        console.error(err);
+        updateLabel.innerText = "Sync Failed";
+    } finally {
+        // Sembunyikan setelah 1 detik agar user sempat melihat progres 100%
+        setTimeout(() => {
+            container.classList.add('hidden');
+            progress.style.width = "0%";
+        }, 1000);
+    }
+};
 
         function updateTimeRemaining(ahIn, ahOut) {
             const timeRemainingElement = document.getElementById('time-remaining-value');
