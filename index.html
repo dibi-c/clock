@@ -565,33 +565,35 @@
                 unifiedChart.update('none');
             }
 
-
- const waterElement = document.getElementById('waterWave');
-const currentAmps = Math.abs(d.a || 0); // Ambil nilai mutlak arus
+const waterElement = document.getElementById('waterWave');
+const currentAmps = d.a || 0; // Nilai arus (positif = charge, negatif = discharge)
+const socValue = d.soc || 0;  // Nilai SoC (0-100)
 
 if (waterElement) {
-    // 1. Update Tinggi Air (Tetap jalan)
-    const waterLevel = 80 - (160 * (d.soc / 100));
+    // 1. Update Tinggi Air Berdasarkan SoC
+    // Rumus: Semakin tinggi SoC, translateY semakin kecil (naik ke atas)
+    // Jika 100% -> -80px (penuh), Jika 0% -> 80px (kosong)
+    const waterLevel = 80 - (160 * (socValue / 100));
     waterElement.style.transform = `translateY(${waterLevel}px)`;
+    waterElement.style.transition = "transform 0.5s ease-in-out"; // Agar pergerakan smooth
 
-    // 2. Kontrol Animasi Gelombang
-    // Jika arus > 0.05A (ada aktivitas), jalankan gelombang
-    if (currentAmps > 0.05) {
+    // 2. Kontrol Animasi & Warna Berdasarkan Arus
+    if (currentAmps > 0.5) { 
+        // --- CHARGING (Mengisi) ---
         waterElement.classList.add('wave-active');
+        waterElement.setAttribute('fill', '#10b981'); // Hijau
+        
+    } else if (currentAmps < -0.5) { 
+        // --- DISCHARGING (Menguras) ---
+        waterElement.classList.add('wave-active');
+        waterElement.setAttribute('fill', '#3b82f6'); // Biru
+        
     } else {
-        // Jika standby (arus ~0), hentikan gelombang
+        // --- STANDBY (Diam) ---
         waterElement.classList.remove('wave-active');
+        waterElement.setAttribute('fill', '#f59e0b'); // Amber
     }
 }
-
-    // 3. Update Warna
-    if ((d.a || 0) > 1) {
-        waterElement.setAttribute('fill', '#10b981'); // Hijau (Charging)
-    } else if ((d.a || 0) < -1) {
-        waterElement.setAttribute('fill', '#3b82f6'); // Biru (Discharging)
-    } else {
-        waterElement.setAttribute('fill', '#f59e0b'); // Amber (Standby)
-    }
 
 
     const valA = d.a || 0;
