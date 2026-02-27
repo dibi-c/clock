@@ -44,11 +44,16 @@
             width: 400%; /* 4 Tab = 400% */
             transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             will-change: transform;
+            align-items: flex-start; /* Pastikan tab pendek tidak dipaksa memanjang */
         }
         .tab-page {
             width: 25%; /* Tiap halaman ambil 1/4 dari wrapper */
             flex-shrink: 0;
             padding: 0 1rem;
+            /* Tambahkan ini */
+            height: calc(100vh - 120px); /* Potong tinggi layar dikurangi navigasi/header */
+            overflow-y: auto; 
+            overflow-x: hidden;
         }
 
         .nav-bar { background: rgba(10, 14, 23, 0.9); backdrop-filter: blur(15px); border-top: 1px solid rgba(255,255,255,0.1); }
@@ -147,8 +152,9 @@
         <g clip-path="url(#circleMask)">
             <path id="waterWave" class="wave-active" 
                   fill="#f59e0b" fill-opacity="0.4" 
-                  d="M-240 0 Q-200 -20 -160 0 T-80 0 T0 0 T80 0 T160 0 T240 0 V150 H-240 Z" 
-                  style="transform: translateY(80px);" />
+                  /* Q-220 -10 -200: Jarak horizontal diperpendek, tinggi dikurangi jadi 10 */
+      d="M-240 0 Q-220 -10 -200 0 T-160 0 T-120 0 T-80 0 T-40 0 T0 0 T40 0 T80 0 T120 0 T160 0 T200 0 T240 0 V500 H-240 Z" 
+      style="transform: translateY(var(--ty, 80px));" />
         </g>
 
         <g transform="rotate(-90)">
@@ -273,6 +279,8 @@
                 </div>
             </div>
 
+
+
             <div class="tab-page">
                 <div id="tab-thermal" class="space-y-4">
                     <div class="glass-panel p-6">
@@ -288,12 +296,11 @@
                             </div>
                         </div>
                     </div>
-
-                   
-
-
                 </div>
             </div>
+
+
+   
 
             <div class="tab-page">
                 <div id="tab-charts" class="space-y-4">
@@ -369,14 +376,14 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                      </div>
 
-                    <div class="glass-panel p-4 bg-gradient-to-br from-white/5 to-transparent">
-                        <div class="flex items-center gap-2 mb-3">
+                      <div class="glass-panel p-4 bg-gradient-to-br from-white/5 to-transparent">
+                         <div class="flex items-center gap-2 mb-3">
                             <div class="h-3 w-1 bg-slate-400 rounded-full"></div>
                             <span class="label-tech !text-[9px] tracking-widest opacity-70">Current Capacity Discharging</span>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
+                         </div>
+                         <div class="grid grid-cols-2 gap-4">
                             <div class="bg-black/20 p-3 rounded-xl border border-white/5">
                                 <p class="label-tech !text-[7px] opacity-50 mb-1 uppercase">Current Capacity (Energy)</p>
                                 <div class="flex items-baseline gap-1">
@@ -412,15 +419,49 @@
                                 <div class="flex items-baseline gap-1 justify-end">
                                     <p id="cycles" class="big-number text-xl text-slate-300">0</p>
                                 </div>
-                            </div>
+                             </div>
                         </div>
-                    </div>
-                        
-                    </div>
+                    </div>  
+                  </div>
+                </div>
+
+                 <div class="tab-page">
+    <div id="tab-door" class="space-y-4">
+        <div class="glass-panel p-6 text-center">
+            <span class="label-tech mb-4 block">Door Control System</span>
+            
+            <div class="space-y-3">
+                <button onclick="sendDoorCmd('D', '1')" class="w-full py-4 bg-blue-600 hover:bg-blue-500 rounded-2xl font-bold flex items-center justify-center gap-3 transition-all">
+                    <span>🔓</span> BUKA PINTU
+                </button>
+                
+                <button onclick="syncDoorTime()" class="w-full py-4 bg-emerald-600 hover:bg-emerald-500 rounded-2xl font-bold flex items-center justify-center gap-3 transition-all">
+                    <span>🕒</span> SINKRON WAKTU (HP)
+                </button>
+            </div>
+
+            <div class="mt-8 pt-6 border-t border-white/5 space-y-3">
+                <p class="label-tech opacity-50">LCD Control</p>
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="sendDoorCmd('L', '1')" class="py-3 bg-white/5 border border-white/10 rounded-xl font-bold text-xs">LCD ON</button>
+                    <button onclick="sendDoorCmd('L', '0')" class="py-3 bg-white/5 border border-white/10 rounded-xl font-bold text-xs">LCD OFF</button>
                 </div>
             </div>
 
-        </div> </main>
+            <div id="doorStatus" class="mt-6 text-[10px] font-mono text-slate-500 italic">
+                Status: Siap.
+            </div>
+        </div>
+    </div>
+            </div>
+
+
+        </div> 
+        
+        
+        
+
+</div>  </main>
 
     <div class="nav-bar fixed bottom-0 left-0 right-0 h-20 flex justify-around items-center px-4 z-50">
         <button onclick="switchTab('home')" id="nav-home" class="tab-btn active flex flex-col items-center gap-1">
@@ -434,6 +475,9 @@
         </button>
         <button onclick="switchTab('charts')" id="nav-charts" class="tab-btn flex flex-col items-center gap-1">
             <span class="text-xl">📈</span><span class="text-[8px] font-bold uppercase tracking-wider">Stats</span>
+        </button>
+        <button onclick="switchTab('door')" id="nav-door" class="tab-btn flex flex-col items-center gap-1">
+            <span class="text-xl">🚪</span><span class="text-[8px] font-bold uppercase tracking-wider">Pintu</span>
         </button>
     </div>
 
@@ -449,13 +493,24 @@
     <script>
         function switchTab(tabId) {
             const wrapper = document.getElementById('tab-wrapper');
-            const tabs = ['home', 'cells', 'thermal', 'charts'];
+             const tabs = ['home', 'cells', 'thermal', 'charts', 'door']; // Tambah 'door'
             const index = tabs.indexOf(tabId);
 
-            if (index !== -1) {
+            
                 // Geser wrapper ke posisi tab yang dipilih
                 wrapper.style.transform = `translateX(-${index * 25}%)`;
-            }
+            
+
+            // Reset semua tab agar tidak memengaruhi tinggi
+    document.querySelectorAll('.tab-page').forEach((page, idx) => {
+        if(idx === index) {
+            page.style.height = "auto";
+            page.style.overflow = "visible";
+        } else {
+            page.style.height = "100vh"; /* Batasi tinggi tab yang sembunyi */
+            page.style.overflow = "hidden"; /* Hilangkan skrol untuk tab sembunyi */
+        }
+    });
 
             // Update status aktif navigasi
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -485,8 +540,54 @@
     </script>
 
     <script type="module">
-        import { getDatabase, ref, onValue, query as rtdbQuery, limitToLast, get, orderByChild, startAt, endAt } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+        // Tambahkan 'update' di sini
+import { getDatabase, ref, onValue, query as rtdbQuery, limitToLast, get, orderByChild, startAt, endAt, set, update as fbUpdate } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+       
+      // Fungsi pengiriman perintah (Anti-Loop) dengan Reset
+window.sendDoorCmd = (type, val) => {
+    const statusEl = document.getElementById('doorStatus');
+    const rtdb = getDatabase(); 
+    
+    // Memberi feedback visual ke user
+    statusEl.innerText = `SENDING: ${type}...`;
+    statusEl.classList.add('animate-pulse', 'text-amber-500');
+    
+    // 1. Mengirim perintah ke node 'control'
+    set(ref(rtdb, 'control'), {
+        type: type,
+        val: val.toString(),
+        time: Date.now() // Opsional: tambah timestamp agar data selalu dianggap baru oleh Firebase
+    }).then(() => {
+        statusEl.innerText = "COMMAND SENT SUCCESSFULLY";
+        statusEl.classList.replace('text-amber-500', 'text-emerald-500');
+        
+        // 2. RESET: Menghapus perintah setelah 2 detik agar tidak dieksekusi terus menerus
+        setTimeout(() => {
+            // Pastikan 'update' sudah ada di baris import atas!
+            fbUpdate(ref(rtdb, 'control'), { 
+                type: "", 
+                val: "" 
+            }).then(() => {
+                statusEl.innerText = "STATUS: READY";
+                statusEl.classList.remove('animate-pulse', 'text-emerald-500');
+                statusEl.classList.remove('text-amber-500');
+            });
+        }, 2000);
+
+    }).catch(err => {
+        console.error(err);
+        alert("Transmission Failed: " + err.message);
+        statusEl.innerText = "STATUS: ERROR";
+        statusEl.classList.remove('animate-pulse');
+    });
+};
+
+window.syncDoorTime = () => {
+    // Menghitung Epoch + 7 Jam untuk WIB
+    const ts = Math.floor(Date.now() / 1000);
+    window.sendDoorCmd('X', ts + (7 * 3600));
+};
 
         const db = new Dexie("BMS_History_DB");
         db.version(1).stores({ history: '++id, ts, w, v, a, t, tb' });
@@ -925,7 +1026,7 @@ let touchstartX = 0;
 let touchendX = 0;
 
 const wrapper = document.getElementById('tab-wrapper');
-const tabs = ['home', 'cells', 'thermal', 'charts'];
+const tabs = ['home', 'cells', 'thermal', 'charts', 'door'];
 
 // Deteksi awal sentuhan
 window.addEventListener('touchstart', e => {
