@@ -151,10 +151,9 @@
         
         <g clip-path="url(#circleMask)">
             <path id="waterWave" class="wave-active" 
-                  fill="#f59e0b" fill-opacity="0.4" 
-                  /* Q-220 -10 -200: Jarak horizontal diperpendek, tinggi dikurangi jadi 10 */
-      d="M-240 0 Q-220 -10 -200 0 T-160 0 T-120 0 T-80 0 T-40 0 T0 0 T40 0 T80 0 T120 0 T160 0 T200 0 T240 0 V500 H-240 Z" 
-      style="transform: translateY(var(--ty, 80px));" />
+                  fill="#f59e0b" fill-opacity="0.4"     
+                  d="M-240 0 Q-220 -10 -200 0 T-160 0 T-120 0 T-80 0 T-40 0 T0 0 T40 0 T80 0 T120 0 T160 0 T200 0 T240 0 V500 H-240 Z" 
+                  style="transform: translateY(var(--ty, 80px));" />
         </g>
 
         <g transform="rotate(-90)">
@@ -490,6 +489,17 @@
         </div>
     </div>
 
+      
+<div id="updateToast" class="fixed bottom-6 left-1/2 -translate-x-1/2 glass-card border-blue-500/50 flex items-center gap-4 z-[200] hidden shadow-2xl">
+    <div class="text-sm">
+        <p class="font-bold text-white">Versi Baru Tersedia!</p>
+        <p class="text-[10px] text-blue-400 uppercase">Perbaharui untuk fitur terbaru</p>
+    </div>
+    <button id="updateBtn" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-black text-[10px] uppercase transition-all">
+        Update
+    </button>
+</div>
+
     <script>
         function switchTab(tabId) {
             const wrapper = document.getElementById('tab-wrapper');
@@ -597,6 +607,55 @@ window.syncDoorTime = () => {
 
        let lastDataTS = Date.now();
 
+// --- LOGIKA UPDATE OTOMATIS (PERBAIKAN) ---
+let newWorker;
+
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').then(reg => {
+        // Cek jika ada worker yang sedang menunggu (waiting) saat halaman baru dibuka
+        if (reg.waiting) {
+            showUpdateToast(reg.waiting);
+        }
+
+        reg.addEventListener('updatefound', () => {
+            newWorker = reg.installing;
+            newWorker.addEventListener('statechange', () => {
+                // Munculkan toast hanya jika SW baru sudah 'installed'
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    showUpdateToast(newWorker);
+                }
+            });
+        });
+    });
+
+    // Event listener untuk reload halaman setelah SW baru aktif (skipWaiting)
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+            window.location.reload();
+            refreshing = true;
+        }
+    });
+}
+
+// Fungsi pembantu untuk memunculkan toast
+function showUpdateToast(worker) {
+    const toast = document.getElementById('updateToast');
+    const updateBtn = document.getElementById('updateBtn'); // Pastikan tombol di HTML punya ID ini
+
+    if (toast) {
+        toast.classList.remove('hidden');
+        
+        // Jika user klik tombol update
+        if (updateBtn) {
+            updateBtn.addEventListener('click', () => {
+                worker.postMessage({ action: 'skipWaiting' });
+            });
+        }
+    }
+}
+        
+
        // Cek status setiap 3 detik
 setInterval(() => {
     const pulse = document.getElementById('statusPulse');
@@ -641,6 +700,8 @@ setInterval(() => {
 };
 
 
+
+        
 
         const errorDict = { 0: "Sistem Normal", 1: "Tegangan Sel di Bawah Ambang Batas (2.5V)", 3: "Kesalahan Penulisan/Pembacaan Memori EEPROM", 4: "Proteksi Suhu: Terdeteksi Anomali Suhu Operasional", 5: "Aktivasi Sistem Trip: Gagal Reaktivasi Deteksi Arus Terpasang", 6: "Terdeteksi Hubungan Arus Pendek (Short Circuit)", 7: "Proteksi Arus Berlebih (Overcurrent Detected)", 8: "Tegangan Baterai Sangat Rendah: Diperlukan Pengisian Daya", 9: "Proteksi Pengisian: Tegangan Melebihi Batas Aman", 10: "Tegangan Baterai Rendah: Diperlukan Pengisian Daya", 11: "Kapasitas Rendah: Kurangi Beban" };
 
@@ -729,6 +790,8 @@ if(saved) {
     }
 }
 
+
+        
         function updateUI(d) {
             updateTimeRemaining(d.cChg || 0, d.cDis || 0);
             update('soc', Math.round(d.soc || 0));
