@@ -152,7 +152,7 @@
         <g clip-path="url(#circleMask)">
             <path id="waterWave" class="wave-active" 
                   fill="#f59e0b" fill-opacity="0.4"     
-                  d="M-240 0 Q-220 -10 -200 0 T-160 0 T-120 0 T-80 0 T-40 0 T0 0 T40 0 T80 0 T120 0 T160 0 T200 0 T240 0 V500 H-240 Z" 
+                  d="M-240 0 Q-220 -3 -200 0 T-160 0 T-120 0 T-80 0 T-40 0 T0 0 T40 0 T80 0 T120 0 T160 0 T200 0 T240 0 V500 H-240 Z" 
                   style="transform: translateY(var(--ty, 80px));" />
         </g>
 
@@ -185,7 +185,7 @@
 
         <div class="border-l border-white/5 pl-4">
             <p class="label-tech">Voltage (V)</p>
-            <p class="big-number text-2xl text-emerald-500" id="vTotal">220</p>
+            <p class="big-number text-2xl text-emerald-500" id="vTotal">0.0</p>
         </div>
     </div>
 
@@ -200,22 +200,38 @@
                     
 
 
-                    <div id="errorCard" class="glass-panel p-6 border-l-4 border-emerald-500 flex flex-col gap-4">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-4">
-                                <div id="statusDot" class="h-3 w-3 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]"></div>
-                                <div><p class="label-tech">Status</p><h3 id="errText" class="big-number text-sm uppercase text-emerald-500">System Secure</h3></div>
-                            </div>
-                            <button onclick="toggleLog()" class="px-3 py-1 bg-white/5 rounded-lg border border-white/10 text-[8px] label-tech text-white">Log</button>
-                        </div>
-                        <div id="historyContent" class="collapsed border-t border-white/5 pt-4">
-                            <div id="securityHistory" class="max-h-32 overflow-y-auto pr-2">
-                                <div class="history-entry text-slate-600 italic">Menunggu telemetri...</div>
-                            </div>
-                        </div>
-                    </div>
+                    <div id="errorCard" class="relative overflow-hidden group bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 transition-all duration-300 hover:border-emerald-500/30">
+    <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <div class="relative flex h-3 w-3">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span id="statusDot" class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+            </div>
+            
+            <div>
+                <span class="block text-[10px] tracking-widest uppercase text-slate-400 font-medium leading-none mb-1">Status</span>
+                <h3 id="errText" class="text-sm font-semibold tracking-tight text-emerald-400/90 italic uppercase">System Secure</h3>
+            </div>
+        </div>
+
+        <button onclick="toggleLog()" class="px-4 py-1.5 bg-white/5 hover:bg-white/10 rounded-full border border-white/10 transition-colors text-[10px] font-medium text-slate-300">
+            View Log
+        </button>
+    </div>
+
+    <div id="historyContent" class="hidden mt-4 pt-4 border-t border-white/5 transition-all duration-500">
+        <div id="securityHistory" class="max-h-32 overflow-y-auto space-y-2 scrollbar-hide">
+            <div class="history-entry text-xs text-slate-500 font-light tracking-wide">
+                <span class="opacity-50 mr-2">•</span> Menunggu telemetri...
+            </div>
+        </div>
+    </div>
+</div>
+
                 </div>
             </div>
+
+
 
             <div class="tab-page">
 
@@ -711,19 +727,92 @@ setInterval(() => {
             data: {
                 labels: [],
                 datasets: [
-                    { label: 'Watt', data: [], borderColor: '#3b82f6', borderWidth: 2, tension: 0.4, pointRadius: 0, yAxisID: 'yPower' },
-                    { label: 'Volt', data: [], borderColor: '#10b981', borderWidth: 2, tension: 0.4, pointRadius: 0, yAxisID: 'yVolt' },
-                    { label: 'Amp', data: [], borderColor: '#f59e0b', borderWidth: 1.5, tension: 0.4, pointRadius: 0, yAxisID: 'yAmp' },
-                    { label: 'T-Mos', data: [], borderColor: '#ef4444', borderWidth: 1, tension: 0.4, pointRadius: 0, yAxisID: 'yTemp'},
-                    { label: 'T-Batt', data: [], borderColor: '#a855f7', borderWidth: 1, tension: 0.4, pointRadius: 0, yAxisID: 'yTemp'}
-                ]
+            { 
+                label: 'Watt', 
+                data: [], 
+                borderColor: '#3b82f6', 
+                backgroundColor: 'rgba(59, 130, 246, 0.1)', // Warna Biru Transparan
+                fill: true, // Mengaktifkan warna di bawah garis
+                borderWidth: 2, 
+                tension: 0.4, 
+                pointRadius: 0, 
+                yAxisID: 'yPower' 
             },
-            options: {
+            { 
+                label: 'Volt', 
+                data: [], 
+                borderColor: '#10b981', 
+                backgroundColor: 'rgba(16, 185, 129, 0.1)', // Warna Hijau Transparan
+                fill: true, 
+                borderWidth: 2, 
+                tension: 0.4, 
+                pointRadius: 0, 
+                yAxisID: 'yVolt' 
+            },
+            { 
+                label: 'Amp', 
+                data: [], 
+                borderColor: '#f59e0b', 
+                backgroundColor: 'rgba(245, 158, 11, 0.1)', // Warna Amber Transparan
+                fill: true, 
+                borderWidth: 1.5, 
+                tension: 0.4, 
+                pointRadius: 0, 
+                yAxisID: 'yAmp' 
+            },
+            { 
+                label: 'T-Mos', 
+                data: [], 
+                borderColor: '#ef4444', 
+                backgroundColor: 'rgba(239, 68, 68, 0.05)', // Warna Merah Transparan
+                fill: true, 
+                borderWidth: 1, 
+                tension: 0.4, 
+                pointRadius: 0, 
+                yAxisID: 'yTemp'
+            },
+            { 
+                label: 'T-Batt', 
+                data: [], 
+                borderColor: '#a855f7', 
+                backgroundColor: 'rgba(168, 85, 247, 0.05)', // Warna Ungu Transparan
+                fill: true, 
+                borderWidth: 1, 
+                tension: 0.4, 
+                pointRadius: 0, 
+                yAxisID: 'yTemp'
+            }
+        ]
+    },
+    options: {
                 responsive: true, maintainAspectRatio: false,
                 animation: false,
                 interaction: { mode: 'index', intersect: false },
                 plugins: { legend: { display: false } },
-                scales: { x: { display: false }, yPower: { display: false }, yVolt: { display: false }, yAmp: { display: false }, yTemp: { display: false } }
+               scales: {
+    x: { display: false },
+    yPower: { 
+        display: false, 
+        suggestedMin: 0, 
+        suggestedMax: 300 // Atau sesuaikan dengan rata-rata beban Watt kamu
+    },
+    yVolt: { 
+        display: false, 
+        // Sangat penting untuk Voltase agar tidak melompat saat berubah 0.01
+        suggestedMin: 10,  
+        suggestedMax: 15   
+    },
+    yAmp: { 
+        display: false, 
+        suggestedMin: -30, 
+        suggestedMax: 30 
+    },
+    yTemp: { 
+        display: false, 
+        suggestedMin: 5, 
+        suggestedMax: 100 
+    }
+}
             }
         });
 
@@ -845,7 +934,7 @@ if(saved) {
             }
 
             if(liveMode) {
-                if(unifiedChart.data.labels.length > 50) { 
+                if(unifiedChart.data.labels.length > 500) { 
                     unifiedChart.data.labels.shift(); 
                     unifiedChart.data.datasets.forEach(ds => ds.data.shift()); 
                 }
