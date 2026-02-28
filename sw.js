@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bms-remote-v6.5'; // Naikkan versi ini setiap kali Anda update kode di GitHub
+const CACHE_NAME = 'bms-remote-v6.6'; // Naikkan versi ini setiap kali Anda update kode di GitHub
 const assetsToCache = [
   './',
   './index.html',
