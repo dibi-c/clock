@@ -133,7 +133,7 @@
 }
 /* Gelombang Belakang: Lebih lambat & Terbalik untuk kesan 3D */
 #waterWaveBack.wave-active { 
-    animation: waveMove 5s linear infinite reverse; 
+    animation: waveMove 5s linear infinite; 
 }
 
 
@@ -162,12 +162,12 @@
         <g clip-path="url(#circleMask)">
            <path id="waterWaveBack" class="wave-active" 
                  fill-opacity="0.3"     
-                 d="M-240 0 Q-220 -3 -200 0 T-160 0 T-120 0 T-80 0 T-40 0 T0 0 T40 0 T80 0 T120 0 T160 0 T200 0 T240 0 V500 H-240 Z" 
+                 d="M-240 0 Q-220 -10 -200 0 T-160 0 T-120 0 T-80 0 T-40 0 T0 0 T40 0 T80 0 T120 0 T150 0 T190 0 T240 0 V500 H-240 Z" 
                  style="transform: translateY(var(--ty, 80px)); transition: fill 0.5s ease, d 0.5s ease;" />
     
            <path id="waterWave" class="wave-active" 
                  fill-opacity="0.5"     
-                 d="M-240 0 Q-220 -3 -200 0 T-160 0 T-120 0 T-80 0 T-40 0 T0 0 T40 0 T80 0 T120 0 T160 0 T200 0 T240 0 V500 H-240 Z" 
+                 d="M-240 0 Q-220 -10 -200 0 T-160 0 T-120 0 T-80 0 T-40 0 T0 0 T40 0 T80 0 T120 0 T150 0 T190 0 T240 0 V500 H-240 Z" 
                  style="transform: translateY(var(--ty, 80px)); transition: fill 0.5s ease, d 0.5s ease;" />
         </g>
 
@@ -946,7 +946,7 @@ const absAmps = Math.abs(currentAmps);
 
 if (waterFront && waterBack) {
     const waterLevel = 80 - (160 * (d.soc / 100));
-    const wavePath = "M-240 0 Q-220 -3 -200 0 T-160 0 T-120 0 T-80 0 T-40 0 T0 0 T40 0 T80 0 T120 0 T160 0 T200 0 T240 0 V500 H-240 Z";
+    const wavePath = "M-240 0 Q-220 -5 -200 0 T-160 0 T-120 0 T-80 0 T-40 0 T0 0 T40 0 T80 0 T120 0 T160 0 T200 0 T240 0 V500 H-240 Z";
     const flatPath = "M-240 0 L240 0 V500 H-240 Z";
 
     // Set level dan warna
