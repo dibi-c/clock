@@ -131,6 +131,16 @@
     /* Hanya transition untuk fill, transform diatur oleh keyframe/JS */
     transition: fill 0.5s ease;
 }
+/* Gelombang Belakang: Lebih lambat & Terbalik untuk kesan 3D */
+#waterWaveBack.wave-active { 
+    animation: waveMove 5s linear infinite reverse; 
+}
+
+
+
+#socCircle {
+    transition: stroke-dashoffset 0.8s ease, stroke 0.8s ease;
+}
         </style>
 
         <clipPath id="circleMask">
@@ -150,10 +160,15 @@
         <circle cx="0" cy="0" r="85" stroke="currentColor" stroke-width="6" fill="transparent" class="text-white/5" />
         
         <g clip-path="url(#circleMask)">
-            <path id="waterWave" class="wave-active" 
-                  fill="#f59e0b" fill-opacity="0.4"     
-                  d="M-240 0 Q-220 -3 -200 0 T-160 0 T-120 0 T-80 0 T-40 0 T0 0 T40 0 T80 0 T120 0 T160 0 T200 0 T240 0 V500 H-240 Z" 
-                  style="transform: translateY(var(--ty, 80px));" />
+           <path id="waterWaveBack" class="wave-active" 
+                 fill-opacity="0.3"     
+                 d="M-240 0 Q-220 -3 -200 0 T-160 0 T-120 0 T-80 0 T-40 0 T0 0 T40 0 T80 0 T120 0 T160 0 T200 0 T240 0 V500 H-240 Z" 
+                 style="transform: translateY(var(--ty, 80px)); transition: fill 0.5s ease, d 0.5s ease;" />
+    
+           <path id="waterWave" class="wave-active" 
+                 fill-opacity="0.5"     
+                 d="M-240 0 Q-220 -3 -200 0 T-160 0 T-120 0 T-80 0 T-40 0 T0 0 T40 0 T80 0 T120 0 T160 0 T200 0 T240 0 V500 H-240 Z" 
+                 style="transform: translateY(var(--ty, 80px)); transition: fill 0.5s ease, d 0.5s ease;" />
         </g>
 
         <g transform="rotate(-90)">
@@ -882,6 +897,78 @@ if(saved) {
 
         
         function updateUI(d) {
+
+
+        const socValue = Math.round(d.soc || 0);
+
+    // --- LOGIKA WARNA SOLID DARI RENTANG GRADASI ---
+    const getDynamicColor = (percent) => {
+        let r, g, b;
+        if (percent > 50) {
+            // Rentang 100% (Hijau) ke 50% (Kuning)
+            // Hijau: (16, 185, 129) -> Kuning: (245, 158, 11)
+            const ratio = (percent - 50) / 50; // 0 ke 1
+            r = Math.round(245 + (16 - 245) * ratio);
+            g = Math.round(158 + (185 - 158) * ratio);
+            b = Math.round(11 + (129 - 11) * ratio);
+        } else {
+            // Rentang 50% (Kuning) ke 0% (Merah)
+            // Kuning: (245, 158, 11) -> Merah: (239, 68, 68)
+            const ratio = percent / 50; // 0 ke 1
+            r = Math.round(239 + (245 - 239) * ratio);
+            g = Math.round(68 + (158 - 68) * ratio);
+            b = Math.round(68 + (11 - 68) * ratio);
+        }
+        return `rgb(${r}, ${g}, ${b})`;
+    };
+
+    const dynamicColor = getDynamicColor(socValue);
+    const circle = document.getElementById('socCircle');
+    
+    if (circle) {
+        circle.style.stroke = dynamicColor;
+        circle.style.strokeDashoffset = 534 - (534 * (socValue / 100));
+    }
+
+    
+   // Fungsi untuk membuat warna lebih gelap secara otomatis
+const getDarkerColor = (rgbString, factor = 0.7) => {
+    const rgb = rgbString.match(/\d+/g).map(Number);
+    return `rgb(${Math.round(rgb[0]*factor)}, ${Math.round(rgb[1]*factor)}, ${Math.round(rgb[2]*factor)})`;
+};
+
+const darkerColor = getDarkerColor(dynamicColor);
+
+const waterFront = document.getElementById('waterWave');
+const waterBack = document.getElementById('waterWaveBack');
+const currentAmps = d.a || 0;
+const absAmps = Math.abs(currentAmps);
+
+if (waterFront && waterBack) {
+    const waterLevel = 80 - (160 * (d.soc / 100));
+    const wavePath = "M-240 0 Q-220 -3 -200 0 T-160 0 T-120 0 T-80 0 T-40 0 T0 0 T40 0 T80 0 T120 0 T160 0 T200 0 T240 0 V500 H-240 Z";
+    const flatPath = "M-240 0 L240 0 V500 H-240 Z";
+
+    // Set level dan warna
+    [waterFront, waterBack].forEach(el => el.style.setProperty('--ty', `${waterLevel}px`));
+    
+    waterFront.setAttribute('fill', dynamicColor);
+    waterBack.setAttribute('fill', darkerColor); // Warna lebih gelap untuk efek kedalaman
+
+    if (absAmps > 0.5) {
+        waterFront.setAttribute('d', wavePath);
+        waterBack.setAttribute('d', wavePath);
+        waterFront.classList.add('wave-active');
+        waterBack.classList.add('wave-active');
+    } else {
+        waterFront.setAttribute('d', flatPath);
+        waterBack.setAttribute('d', flatPath);
+        waterFront.classList.remove('wave-active');
+        waterBack.classList.remove('wave-active');
+    }
+}
+    // ----------------------------------------------
+
             updateTimeRemaining(d.cChg || 0, d.cDis || 0);
             update('soc', Math.round(d.soc || 0));
             update('current', (d.a || 0).toFixed(1));
@@ -901,7 +988,7 @@ if(saved) {
             update('capChg', (d.cChg || 0).toFixed(1)); 
             update('capDis', (d.cDis || 0).toFixed(1));
 
-            document.getElementById('socCircle').style.strokeDashoffset = 534 - (534 * (d.soc || 0) / 100);
+            //document.getElementById('socCircle').style.strokeDashoffset = 534 - (534 * (d.soc || 0) / 100);
             document.getElementById('rChg').style.opacity = d.rC > 0.5 ? "1" : "0.2";
             document.getElementById('rDis').style.opacity = d.rD > 0.5 ? "1" : "0.2";
 
@@ -947,34 +1034,6 @@ if(saved) {
                 unifiedChart.update('none');
             }
 
-const waterElement = document.getElementById('waterWave');
-const currentAmps = d.a || 0;
-const absAmps = Math.abs(currentAmps);
-
-if (waterElement) {
-    // 1. Hitung level Y berdasarkan SoC
-    const waterLevel = 80 - (160 * (d.soc / 100));
-
-    // 2. Logika Warna
-    let fillContext = '#f59e0b'; // Default Amber
-    if (currentAmps > 1) fillContext = '#10b981'; // Hijau
-    else if (currentAmps < -1) fillContext = '#3b82f6'; // Biru
-    
-    waterElement.setAttribute('fill', fillContext);
-
-    // 3. SOLUSI UTAMA: Gabungkan Y (SoC) ke dalam CSS Variable
-    // Kita simpan nilai Y di variabel agar CSS Animation tetap bisa membacanya
-    waterElement.style.setProperty('--ty', `${waterLevel}px`);
-
-    // 4. Kontrol Animasi
-    if (absAmps > 0.5) {
-        waterElement.classList.add('wave-active');
-    } else {
-        waterElement.classList.remove('wave-active');
-        // Jika tidak aktif, kita tetap harus menjaga posisi Y-nya
-        waterElement.style.transform = `translateY(${waterLevel}px)`;
-    }
-}
 
 
     const valA = d.a || 0;
@@ -982,12 +1041,12 @@ if (waterElement) {
     const txtLeft = document.getElementById('usageLeft');
     const txtRight = document.getElementById('usageRight');
 
-    if (valA > 1) {
+    if (valA > 0.5) {
         // Jika Positif: Tampilkan di Kiri (Charger), Sembunyikan Kanan
         txtLeft.textContent = valUP.toFixed(1) + '%';
         txtLeft.classList.replace('opacity-0', 'opacity-100');
         txtRight.classList.replace('opacity-100', 'opacity-0');
-    } else if (valA < -1) {
+    } else if (valA < -0.5) {
         // Jika Negatif: Tampilkan di Kanan (Load), Sembunyikan Kiri
         // Menggunakan Math.abs agar tanda minus tidak dobel jika ingin tampilan bersih
         txtRight.textContent = Math.abs(valUP).toFixed(1) + '%';
