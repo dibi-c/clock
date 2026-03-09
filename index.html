@@ -106,6 +106,7 @@
             /* Aliran Kabel */
             .flow-line { fill: none; stroke-width: 4; stroke-linecap: round; stroke-dasharray: 10, 15; }
             .flowing { animation: flow 1s linear infinite; }
+
             @keyframes flow { from { stroke-dashoffset: 25; } to { stroke-dashoffset: 0; } }
             .line-off { stroke: rgba(255,255,255,0.05); stroke-dasharray: none; }
             
@@ -148,11 +149,11 @@
         </clipPath>
     </defs>
 
-    <text id="usageLeft" x="60" y="85" text-anchor="middle" class="usage-text text-emerald-500 opacity-0">0%</text>
+    <text id="usageLeft" x="60" y="85" text-anchor="middle" class="usage-text text-white-500 opacity-0">0</text>
     <path id="pathCharger" d="M 20 100 L 100 100" class="line-off" />
     <circle id="nodeCharger" cx="20" cy="100" r="4" fill="currentColor" class="text-white/10" />
     
-    <text id="usageRight" x="340" y="85" text-anchor="middle" class="usage-text text-blue-500 opacity-0">0%</text>
+    <text id="usageRight" x="340" y="85" text-anchor="middle" class="usage-text text-white-500 opacity-0">0%</text>
     <path id="pathLoad" d="M 300 100 L 380 100" class="line-off" />
     <circle id="nodeLoad" cx="380" cy="100" r="4" fill="currentColor" class="text-white/10" />
 
@@ -181,7 +182,7 @@
 
         <div class="absolute text-center">
             <span id="soc" class="big-number text-7xl">0</span>
-            <span class="text-xl font-light text-slate-500">%</span>
+            <span class="text-xl font-light text-slate-500"></span>
         </div>
     </div>
                         
@@ -248,66 +249,58 @@
 
 
 
-            <div class="tab-page">
+           <div class="tab-page">
+    <div id="tab-cells" class="p-6 font-sans">
+        
+        <div class="flex justify-between items-center mb-8 border-b border-slate-800 pb-4">
+            <div>
+                <h2 class="text-xs uppercase tracking-widest text-slate-400">Cell Status</h2>
+            </div>
+            <div class="text-right">
+                <p class="text-[9px] text-slate-500 uppercase">Delta V</p>
+                <span id="vDelta" class="text-xl font-light text-amber-500">0.000</span>
+            </div>
+        </div>
 
-                <div id="tab-cells" class="space-y-4">
-                    <div class="glass-panel p-6">
-                        <div class="flex justify-between items-center mb-6">
-                            <span class="label-tech">Cell Voltages</span>
-                          
-                        </div>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="bg-white/5 p-3 rounded-xl text-center border border-white/5">
-                                <p class="label-tech !text-[7px] opacity-50 mb-1">C1</p>
-                                <p id="v1" class="big-number text-lg text-blue-400">0.00</p>
-                            </div>
-                            <div class="bg-white/5 p-3 rounded-xl text-center border border-white/5">
-                                <p class="label-tech !text-[7px] opacity-50 mb-1">C2</p>
-                                <p id="v2" class="big-number text-lg text-blue-400">0.00</p>
-                            </div>
-                            <div class="bg-white/5 p-3 rounded-xl text-center border border-white/5">
-                                <p class="label-tech !text-[7px] opacity-50 mb-1">C3</p>
-                                <p id="v3" class="big-number text-lg text-blue-400">0.00</p>
-                            </div>
-                            <div class="bg-white/5 p-3 rounded-xl text-center border border-white/5">
-                                <p class="label-tech !text-[7px] opacity-50 mb-1">C4</p>
-                                <p id="v4" class="big-number text-lg text-blue-400">0.00</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div id="rChg" class="glass-panel p-4 flex items-center justify-center gap-3 opacity-20"><span class="text-lg">⚡</span><span class="label-tech">Charging</span></div>
-                        <div id="rDis" class="glass-panel p-4 flex items-center justify-center gap-3 opacity-20"><span class="text-lg">🔌</span><span class="label-tech">Discharge</span></div>
-                    </div>
-
-
-                    <div class="glass-panel p-4 bg-gradient-to-br from-white/5 to-transparent">
-                        <div class="flex items-center gap-2 mb-3">
-                            <div class="h-3 w-1 bg-slate-400 rounded-full"></div>
-                            <span class="label-tech !text-[9px] tracking-widest opacity-70">Current Capacity</span>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="bg-black/20 p-3 rounded-xl border border-white/5">
-                                <p class="label-tech !text-[7px] opacity-50 mb-1 uppercase">(Energy)</p>
-                                <div class="flex items-baseline gap-1">
-                                    <p id="whNow" class="big-number text-xl text-slate-300">0</p>
-                                    <span class="text-[10px] text-slate-500 font-mono">Wh</span>
-                                </div>
-                            </div>
-                            <div class="bg-black/20 p-3 rounded-xl border border-white/5 text-right">
-                                <p class="label-tech !text-[7px] opacity-50 mb-1 uppercase">(Amp)</p>
-                                <div class="flex items-baseline gap-1 justify-end">
-                                    <p id="ahNow" class="big-number text-xl text-slate-300">0</p>
-                                    <span class="text-[10px] text-slate-500 font-mono">Ah</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    
+        <div class="grid grid-cols-2 gap-8 mb-8">
+            <div class="flex flex-col items-center">
+                <div class="w-24 h-24 rounded-full border-2 border-slate-700 flex flex-col justify-center items-center bg-slate-900/30">
+                    <span class="text-[10px] text-slate-500">C1</span>
+                    <span id="v1" class="text-xl font-medium text-blue-300">0.00</span>
                 </div>
             </div>
+            <div class="flex flex-col items-center">
+                <div class="w-24 h-24 rounded-full border-2 border-slate-700 flex flex-col justify-center items-center bg-slate-900/30">
+                    <span class="text-[10px] text-slate-500">C2</span>
+                    <span id="v2" class="text-xl font-medium text-blue-300">0.00</span>
+                </div>
+            </div>
+            <div class="flex flex-col items-center">
+                <div class="w-24 h-24 rounded-full border-2 border-slate-700 flex flex-col justify-center items-center bg-slate-900/30">
+                    <span class="text-[10px] text-slate-500">C3</span>
+                    <span id="v3" class="text-xl font-medium text-blue-300">0.00</span>
+                </div>
+            </div>
+            <div class="flex flex-col items-center">
+                <div class="w-24 h-24 rounded-full border-2 border-slate-700 flex flex-col justify-center items-center bg-slate-900/30">
+                    <span class="text-[10px] text-slate-500">C4</span>
+                    <span id="v4" class="text-xl font-medium text-blue-300">0.00</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 text-center pt-4 border-t border-slate-800">
+            <div>
+                <p class="text-[9px] text-slate-500 uppercase tracking-wide">Energy</p>
+                <p class="text-lg font-light text-slate-300"><span id="whNow">0</span> Wh</p>
+            </div>
+            <div>
+                <p class="text-[9px] text-slate-500 uppercase tracking-wide">Current</p>
+                <p class="text-lg font-light text-slate-300"><span id="ahNow">0</span> Ah</p>
+            </div>
+        </div>
+    </div>
+</div>
 
 
 
@@ -736,100 +729,87 @@ setInterval(() => {
 
         const errorDict = { 0: "Sistem Normal", 1: "Tegangan Sel di Bawah Ambang Batas (2.5V)", 3: "Kesalahan Penulisan/Pembacaan Memori EEPROM", 4: "Proteksi Suhu: Terdeteksi Anomali Suhu Operasional", 5: "Aktivasi Sistem Trip: Gagal Reaktivasi Deteksi Arus Terpasang", 6: "Terdeteksi Hubungan Arus Pendek (Short Circuit)", 7: "Proteksi Arus Berlebih (Overcurrent Detected)", 8: "Tegangan Baterai Sangat Rendah: Diperlukan Pengisian Daya", 9: "Proteksi Pengisian: Tegangan Melebihi Batas Aman", 10: "Tegangan Baterai Rendah: Diperlukan Pengisian Daya", 11: "Kapasitas Rendah: Kurangi Beban" };
 
-        const ctx = document.getElementById('unifiedChart').getContext('2d');
-        const unifiedChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: [
-            { 
-                label: 'Watt', 
-                data: [], 
-                borderColor: '#3b82f6', 
-                backgroundColor: 'rgba(59, 130, 246, 0.1)', // Warna Biru Transparan
-                fill: true, // Mengaktifkan warna di bawah garis
-                borderWidth: 2, 
-                tension: 0.4, 
-                pointRadius: 0, 
-                yAxisID: 'yPower' 
-            },
-            { 
-                label: 'Volt', 
-                data: [], 
-                borderColor: '#10b981', 
-                backgroundColor: 'rgba(16, 185, 129, 0.1)', // Warna Hijau Transparan
-                fill: true, 
-                borderWidth: 2, 
-                tension: 0.4, 
-                pointRadius: 0, 
-                yAxisID: 'yVolt' 
-            },
-            { 
-                label: 'Amp', 
-                data: [], 
-                borderColor: '#f59e0b', 
-                backgroundColor: 'rgba(245, 158, 11, 0.1)', // Warna Amber Transparan
-                fill: true, 
-                borderWidth: 1.5, 
-                tension: 0.4, 
-                pointRadius: 0, 
-                yAxisID: 'yAmp' 
-            },
-            { 
-                label: 'T-Mos', 
-                data: [], 
-                borderColor: '#ef4444', 
-                backgroundColor: 'rgba(239, 68, 68, 0.05)', // Warna Merah Transparan
-                fill: true, 
-                borderWidth: 1, 
-                tension: 0.4, 
-                pointRadius: 0, 
-                yAxisID: 'yTemp'
-            },
-            { 
-                label: 'T-Batt', 
-                data: [], 
-                borderColor: '#a855f7', 
-                backgroundColor: 'rgba(168, 85, 247, 0.05)', // Warna Ungu Transparan
-                fill: true, 
-                borderWidth: 1, 
-                tension: 0.4, 
-                pointRadius: 0, 
-                yAxisID: 'yTemp'
-            }
+       const ctx = document.getElementById('unifiedChart').getContext('2d');
+
+/**
+ * Konfigurasi Standar Dataset
+ * fill: 'origin' memastikan bayangan mengarah ke angka 0
+ */
+const datasetStyle = (label, color, yAxisID, borderWidth = 1.5) => ({
+    label: label,
+    data: [],
+    borderColor: color,
+    backgroundColor: color + '1A', // Transparansi 10%
+    fill: 'origin',                // Bayangan mengarah ke garis 0
+    borderWidth: borderWidth,
+    tension: 0.4,
+    pointRadius: 0,
+    yAxisID: yAxisID,
+    spanGaps: true
+});
+
+const unifiedChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: [],
+        datasets: [
+            datasetStyle('Watt', '#3b82f6', 'yPower', 2),
+            datasetStyle('Volt', '#10b981', 'yVolt', 2),
+            datasetStyle('Amp', '#f59e0b', 'yAmp', 1.5),
+            datasetStyle('T-Mos', '#ef4444', 'yTemp', 1),
+            datasetStyle('T-Batt', '#a855f7', 'yTemp', 1)
         ]
     },
     options: {
-                responsive: true, maintainAspectRatio: false,
-                animation: false,
-                interaction: { mode: 'index', intersect: false },
-                plugins: { legend: { display: false } },
-               scales: {
-    x: { display: false },
-    yPower: { 
-        display: false, 
-        suggestedMin: 0, 
-        suggestedMax: 300 // Atau sesuaikan dengan rata-rata beban Watt kamu
-    },
-    yVolt: { 
-        display: false, 
-        // Sangat penting untuk Voltase agar tidak melompat saat berubah 0.01
-        suggestedMin: 10,  
-        suggestedMax: 15   
-    },
-    yAmp: { 
-        display: false, 
-        suggestedMin: -30, 
-        suggestedMax: 30 
-    },
-    yTemp: { 
-        display: false, 
-        suggestedMin: 5, 
-        suggestedMax: 100 
-    }
-}
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false, 
+        interaction: {
+            mode: 'index',
+            intersect: false
+        },
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                enabled: true,
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                titleFont: { family: 'monospace', size: 10 },
+                bodyFont: { family: 'monospace', size: 10 },
+                cornerRadius: 2,
+                displayColors: true
             }
-        });
+        },
+        scales: {
+            x: { display: false },
+            yPower: { 
+                display: false, 
+                type: 'linear',
+                // Membuat skala simetris agar 0 berada di tengah jika memungkinkan
+                suggestedMin: -5,
+                suggestedMax: 5
+            },
+            yVolt: { 
+                display: false, 
+                type: 'linear',
+                suggestedMin: 10,
+                suggestedMax: 15
+            },
+            yAmp: { 
+                display: false, 
+                type: 'linear',
+                // Membuat skala simetris agar 0 berada di tengah jika memungkinkan
+                suggestedMin: -5,
+                suggestedMax: 5
+            },
+            yTemp: { 
+                display: false, 
+                type: 'linear',
+                suggestedMin: 20,
+                suggestedMax: 60
+            }
+        }
+    }
+});
 
         window.toggleDataset = (index) => {
             const meta = unifiedChart.getDatasetMeta(index);
@@ -894,10 +874,42 @@ if(saved) {
     }
 }
 
+function updateDelta() {
 
+// 1. Ambil nilai dari DOM dan ubah ke tipe Float (angka desimal)
+    const v1 = parseFloat(document.getElementById('v1').innerText) || 0;
+    const v2 = parseFloat(document.getElementById('v2').innerText) || 0;
+    const v3 = parseFloat(document.getElementById('v3').innerText) || 0;
+    const v4 = parseFloat(document.getElementById('v4').innerText) || 0;
+    
+    // 2. Masukkan ke dalam array untuk pengolahan
+    const cellVoltages = [v1, v2, v3, v4];
+
+    // 3. Hitung Max dan Min
+    const maxV = Math.max(...cellVoltages);
+    const minV = Math.min(...cellVoltages);
+
+    // 4. Hitung Delta (Selisih)
+    const delta = maxV - minV;
+
+    // 5. Update tampilan Delta ke HTML (dengan 3 angka di belakang koma)
+    const deltaElement = document.getElementById('vDelta');
+    deltaElement.innerText = delta.toFixed(3) + " V";
+
+    // Bonus: Beri warna merah jika delta terlalu tinggi (misal > 0.050 V)
+    if (delta > 0.050) {
+        deltaElement.className = "text-xs font-bold text-red-500 ml-1";
+    } else {
+        deltaElement.className = "text-xs font-bold text-amber-500 ml-1";
+    }
+}
+
+// Contoh cara menjalankan: 
+// Panggil fungsi updateDelta() setiap kali data voltase sel diperbarui.
         
         function updateUI(d) {
 
+        
 
         const socValue = Math.round(d.soc || 0);
 
@@ -973,7 +985,7 @@ if (waterFront && waterBack) {
             update('soc', Math.round(d.soc || 0));
             update('current', (d.a || 0).toFixed(1));
             update('power', (d.p || 0).toFixed(0));
-            update('vTotal', (d.v || 0).toFixed(2) + 'V');
+            update('vTotal', (d.v || 0).toFixed(2));
             update('v1', (d.v1 || 0).toFixed(3)); update('v2', (d.v2 || 0).toFixed(3));
             update('v3', (d.v3 || 0).toFixed(3)); update('v4', (d.v4 || 0).toFixed(3));
             update('whNow', (d.whN || 0).toFixed(1));
@@ -988,9 +1000,11 @@ if (waterFront && waterBack) {
             update('capChg', (d.cChg || 0).toFixed(1)); 
             update('capDis', (d.cDis || 0).toFixed(1));
 
+             updateDelta();
+
             //document.getElementById('socCircle').style.strokeDashoffset = 534 - (534 * (d.soc || 0) / 100);
-            document.getElementById('rChg').style.opacity = d.rC > 0.5 ? "1" : "0.2";
-            document.getElementById('rDis').style.opacity = d.rD > 0.5 ? "1" : "0.2";
+           // document.getElementById('rChg').style.opacity = d.rC > 0.5 ? "1" : "0.2";
+            //document.getElementById('rDis').style.opacity = d.rD > 0.5 ? "1" : "0.2";
 
             const currentSnapshot = `${d.e1}-${d.e2}-${d.e3}-${d.e4}-${d.e5}-${d.err}`;
             if (currentSnapshot !== lastErrorCode) {
@@ -1036,76 +1050,72 @@ if (waterFront && waterBack) {
 
 
 
-    const valA = d.a || 0;
-    const valUP = d.uP || 0;
-    const txtLeft = document.getElementById('usageLeft');
-    const txtRight = document.getElementById('usageRight');
+    // --- LOGIKA ALIRAN DINAMIS BERDASARKAN VALUP ---
+const valA = d.a || 0;
+const valUP = d.uP || 0;
+const txtLeft = document.getElementById('usageLeft');
+const txtRight = document.getElementById('usageRight');
+
+// Fungsi Hitung Durasi: 100% = 0.3s (Cepat), 0% = 3.0s (Lambat)
+const getFlowDuration = (val) => {
+    const minDur = 0.2; 
+    const maxDur = 2.0;
+    const duration = maxDur - ((Math.min(100, val) / 100) * (maxDur - minDur));
+    return `${duration.toFixed(2)}s`;
+};
+
+const currentDuration = getFlowDuration(valUP);
+
+// --- 1. Logika Kabel Kiri (Charger) ---
+const pathCharger = document.getElementById('pathCharger');
+const nodeCharger = document.getElementById('nodeCharger');
+
+if (d.rC === 1) {
+    pathCharger.style.stroke = '#10b981';
+    nodeCharger.style.color = '#10b981';
 
     if (valA > 0.5) {
-        // Jika Positif: Tampilkan di Kiri (Charger), Sembunyikan Kanan
+        pathCharger.setAttribute('class', 'flow-line flowing');
+        pathCharger.style.animationDuration = currentDuration; // SET KECEPATAN
         txtLeft.textContent = valUP.toFixed(1) + '%';
         txtLeft.classList.replace('opacity-0', 'opacity-100');
         txtRight.classList.replace('opacity-100', 'opacity-0');
-    } else if (valA < -0.5) {
-        // Jika Negatif: Tampilkan di Kanan (Load), Sembunyikan Kiri
-        // Menggunakan Math.abs agar tanda minus tidak dobel jika ingin tampilan bersih
+    } else {
+        pathCharger.setAttribute('class', 'flow-line');
+        pathCharger.style.animationDuration = '';
+        txtLeft.classList.replace('opacity-100', 'opacity-0');
+    }
+} else {
+    pathCharger.setAttribute('class', 'line-off');
+    pathCharger.style.stroke = '';
+    nodeCharger.style.color = '';
+    txtLeft.classList.replace('opacity-100', 'opacity-0');
+}
+
+// --- 2. Logika Kabel Kanan (Load) ---
+const pathLoad = document.getElementById('pathLoad');
+const nodeLoad = document.getElementById('nodeLoad');
+
+if (d.rD === 1) {
+    pathLoad.style.stroke = '#3b82f6';
+    nodeLoad.style.color = '#3b82f6';
+
+    if (valA < -0.5) {
+        pathLoad.setAttribute('class', 'flow-line flowing');
+        pathLoad.style.animationDuration = currentDuration; // SET KECEPATAN
         txtRight.textContent = Math.abs(valUP).toFixed(1) + '%';
         txtRight.classList.replace('opacity-0', 'opacity-100');
         txtLeft.classList.replace('opacity-100', 'opacity-0');
     } else {
-        // Jika Nol: Sembunyikan keduanya
-        txtLeft.classList.replace('opacity-100', 'opacity-0');
+        pathLoad.setAttribute('class', 'flow-line');
+        pathLoad.style.animationDuration = '';
         txtRight.classList.replace('opacity-100', 'opacity-0');
     }
-
-           // 2. Logika Kabel Kiri (Charger) - Menggunakan d.rC atau d.rChg dan d.a
-const pathCharger = document.getElementById('pathCharger');
-const nodeCharger = document.getElementById('nodeCharger');
-
-// 1. Kondisi Utama: Jika d.chg aktif (kabel menyala)
-if (d.rC === 1) {
-    pathCharger.style.stroke = '#10b981'; // Warna hijau menyala
-    nodeCharger.style.color = '#10b981';
-
-    // Cek apakah ada arus masuk (d.a > 1)
-    if ((d.a || 0) > 1) {
-        // Jika ada arus: Berikan class flowing (bergerak)
-        pathCharger.setAttribute('class', 'flow-line flowing');
-    } else {
-        // Jika tidak ada arus: Kabel menyala tapi diam (hapus class flowing)
-        pathCharger.setAttribute('class', 'flow-line'); 
-    }
-
 } else {
-    // 2. Kondisi d.chg === 0: Matikan semua
-    pathCharger.setAttribute('class', 'line-off');
-    pathCharger.style.stroke = '';
-    nodeCharger.style.color = '';
-}
-
-// 3. Logika Kabel Kanan (Load) - Menggunakan d.rD atau d.rDis dan d.p
-const pathLoad = document.getElementById('pathLoad');
-const nodeLoad = document.getElementById('nodeLoad');
-
-// 1. Kondisi Utama: Jika d.rDis aktif (kabel beban menyala)
-if (d.rD === 1) {
-    pathLoad.style.stroke = '#3b82f6'; // Warna biru (beban)
-    nodeLoad.style.color = '#3b82f6';
-
-    // Cek apakah ada arus keluar/beban (d.a < -1)
-    if ((d.a || 0) < -1) {
-        // Jika ada arus: Berikan class flowing (bergerak)
-        pathLoad.setAttribute('class', 'flow-line flowing');
-    } else {
-        // Jika tidak ada arus: Kabel menyala biru tapi diam
-        pathLoad.setAttribute('class', 'flow-line');
-    }
-
-} else {
-    // 2. Kondisi d.rDis === 0: Matikan semua
     pathLoad.setAttribute('class', 'line-off');
     pathLoad.style.stroke = '';
     nodeLoad.style.color = '';
+    txtRight.classList.replace('opacity-100', 'opacity-0');
 }
 
         }
