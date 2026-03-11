@@ -1203,16 +1203,16 @@ if (d.rD === 1) {
     }
 };
 
-        function updateTimeRemaining(ahIn, ahOut) {
+        function updateTimeRemaining(whIn, whOut) {
             const timeRemainingElement = document.getElementById('time-remaining-value');
             if (!timeRemainingElement) return;
 
-            const currentFromUI = parseFloat(document.getElementById('current').textContent) || 0;
-            const capRemFromUI = parseFloat(document.getElementById('ahNow').textContent) || 0;
+            const powerFromUI = parseFloat(document.getElementById('power').textContent) || 0;
+            const capRemFromUI = parseFloat(document.getElementById('whNow').textContent) || 0;
 
-            let currentRem = currentFromUI;
-            let fullCap = ahIn;
-            let dchgCap = ahOut;
+            let currentRem = powerFromUI;
+            let fullCap = whIn;
+            let dchgCap = whOut;
 
             let diff = Math.max(0, fullCap - dchgCap);
             let remainingCap = Math.max(0, capRemFromUI - diff);
