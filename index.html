@@ -61,8 +61,31 @@
         .tab-btn.active { color: #f59e0b; }
         .tab-btn.active::after { content: ''; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 20px; height: 3px; background: #f59e0b; border-radius: 10px; }
 
-        .dibi-box { height: 2.5rem; width: 2.5rem; background: linear-gradient(135deg, #ffbd44 0%, #ff8900 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
-        .dibi-text { font-family: 'Bauhaus 93', sans-serif; font-size: 1.1rem; color: #000; font-weight: bold; }
+        /* Cari kode ini dan ubah menjadi: */
+.dibi-box { 
+    height: 2.5rem; 
+    width: 2.5rem; 
+    /* Gunakan variabel warna dinamis yang sudah kita buat sebelumnya */
+    background-color: var(--dynamic-soc, #f59e0b); 
+    border-radius: 12px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    position: relative; 
+    overflow: hidden;
+    transition: background-color 0.8s ease;
+    
+    /* Tambahkan ini untuk menampilkan logo */
+    background-image: url('logo.png'); 
+    background-size: 80%; /* Menyesuaikan ukuran logo di dalam kotak */
+    background-position: center;
+    background-repeat: no-repeat;
+    /* Efek campuran agar warna dinamis menyatu dengan logo jika logo memiliki background transparan/putih */
+    background-blend-mode: multiply; 
+}
+
+/* Hapus atau sembunyikan .dibi-text karena sudah diganti gambar */
+.dibi-text { display: none; }
 
         #historyContent.collapsed { max-height: 0; opacity: 0; overflow: hidden; }
         #historyContent.expanded { max-height: 300px; opacity: 1; }
@@ -103,12 +126,29 @@
    <svg class="w-full h-48" viewBox="0 0 400 200">
     <defs>
         <style>
-            /* Aliran Kabel */
-            .flow-line { fill: none; stroke-width: 4; stroke-linecap: round; stroke-dasharray: 10, 15; }
-            .flowing { animation: flow 1s linear infinite; }
+/* Aliran Kabel Utama */
+.flow-line { 
+    fill: none; 
+    stroke-width: 4; 
+    stroke-linecap: round; 
+    stroke-dasharray: 10, 15; /* Ini yang membuat garis putus-putus */
+    transition: stroke 0.5s ease, animation-duration 0.8s ease-in-out; 
+}
 
-            @keyframes flow { from { stroke-dashoffset: 25; } to { stroke-dashoffset: 0; } }
-            .line-off { stroke: rgba(255,255,255,0.05); stroke-dasharray: none; }
+/* Ketika kabel dimatikan (rC/rD = 0) */
+.line-off { 
+    stroke: rgba(255, 255, 255, 0.05) !important;
+    /* Jangan set dasharray: none di sini jika ingin tetap putus-putus saat mati */
+}
+
+@keyframes flow { 
+    from { stroke-dashoffset: 25; } 
+    to { stroke-dashoffset: 0; } 
+}
+
+.flowing { 
+    animation: flow 1s linear infinite; 
+}
             
             /* Teks Label */
             .usage-text { font-family: sans-serif; font-weight: 800; font-size: 14px; transition: opacity 0.5s ease; fill: currentColor; }
@@ -942,6 +982,9 @@ function updateDelta() {
         circle.style.strokeDashoffset = 534 - (534 * (socValue / 100));
     }
 
+    // --- TAMBAHKAN KODE DI BAWAH INI ---
+    document.documentElement.style.setProperty('--dynamic-soc', dynamicColor);
+
     
    // Fungsi untuk membuat warna lebih gelap secara otomatis
 const getDarkerColor = (rgbString, factor = 0.7) => {
@@ -1058,10 +1101,14 @@ const txtRight = document.getElementById('usageRight');
 
 // Fungsi Hitung Durasi: 100% = 0.3s (Cepat), 0% = 3.0s (Lambat)
 const getFlowDuration = (val) => {
-    const minDur = 0.2; 
-    const maxDur = 2.0;
-    const duration = maxDur - ((Math.min(100, val) / 100) * (maxDur - minDur));
-    return `${duration.toFixed(2)}s`;
+    // Membatasi nilai agar tidak terjadi durasi yang terlalu ekstrem
+    const clampVal = Math.min(100, Math.max(0, val));
+    const minDur = 0.3; // Kecepatan maksimal
+    const maxDur = 3.0; // Kecepatan minimal
+    
+    // Hitung durasi
+    const duration = maxDur - ((clampVal / 100) * (maxDur - minDur));
+    return `${duration.toFixed(3)}s`;
 };
 
 const currentDuration = getFlowDuration(valUP);
@@ -1071,22 +1118,31 @@ const pathCharger = document.getElementById('pathCharger');
 const nodeCharger = document.getElementById('nodeCharger');
 
 if (d.rC === 1) {
-    pathCharger.style.stroke = '#10b981';
-    nodeCharger.style.color = '#10b981';
+    // Pastikan flow-line selalu ada agar garis tetap putus-putus
+    pathCharger.classList.add('flow-line');
+    //pathCharger.classList.remove('line-off');
+    pathCharger.style.stroke = '#00F77C';
+    nodeCharger.style.color = '#00F77C';
 
-    if (valA > 0.5) {
-        pathCharger.setAttribute('class', 'flow-line flowing');
-        pathCharger.style.animationDuration = currentDuration; // SET KECEPATAN
+    const isFlowing = valA > 0.1;
+    if (isFlowing) {
+        if (!pathCharger.classList.contains('flowing')) {
+            pathCharger.classList.add('flowing');
+            pathCharger.classList.remove('line-off');
+        }
+        pathCharger.style.animationDuration = currentDuration;
+        
         txtLeft.textContent = valUP.toFixed(1) + '%';
         txtLeft.classList.replace('opacity-0', 'opacity-100');
         txtRight.classList.replace('opacity-100', 'opacity-0');
     } else {
-        pathCharger.setAttribute('class', 'flow-line');
-        pathCharger.style.animationDuration = '';
+        pathCharger.classList.remove('flowing');
         txtLeft.classList.replace('opacity-100', 'opacity-0');
     }
 } else {
-    pathCharger.setAttribute('class', 'line-off');
+    // Saat off, kita gunakan classList agar tidak menimpa class dasar secara kasar
+    pathCharger.classList.add('line-off');
+    pathCharger.classList.remove('flowing');
     pathCharger.style.stroke = '';
     nodeCharger.style.color = '';
     txtLeft.classList.replace('opacity-100', 'opacity-0');
@@ -1097,22 +1153,29 @@ const pathLoad = document.getElementById('pathLoad');
 const nodeLoad = document.getElementById('nodeLoad');
 
 if (d.rD === 1) {
-    pathLoad.style.stroke = '#3b82f6';
-    nodeLoad.style.color = '#3b82f6';
+    pathLoad.classList.add('flow-line');
+    //pathLoad.classList.remove('line-off');
+    pathLoad.style.stroke = '#00F77C';
+    nodeLoad.style.color = '#00F77C';
 
-    if (valA < -0.5) {
-        pathLoad.setAttribute('class', 'flow-line flowing');
-        pathLoad.style.animationDuration = currentDuration; // SET KECEPATAN
+    const isFlowingLoad = valA < -0.1;
+    if (isFlowingLoad) {
+        if (!pathLoad.classList.contains('flowing')) {
+            pathLoad.classList.add('flowing');
+            pathLoad.classList.remove('line-off');
+        }
+        pathLoad.style.animationDuration = currentDuration;
+        
         txtRight.textContent = Math.abs(valUP).toFixed(1) + '%';
         txtRight.classList.replace('opacity-0', 'opacity-100');
         txtLeft.classList.replace('opacity-100', 'opacity-0');
     } else {
-        pathLoad.setAttribute('class', 'flow-line');
-        pathLoad.style.animationDuration = '';
+        pathLoad.classList.remove('flowing');
         txtRight.classList.replace('opacity-100', 'opacity-0');
     }
 } else {
-    pathLoad.setAttribute('class', 'line-off');
+    pathLoad.classList.add('line-off');
+    pathLoad.classList.remove('flowing');
     pathLoad.style.stroke = '';
     nodeLoad.style.color = '';
     txtRight.classList.replace('opacity-100', 'opacity-0');
@@ -1203,16 +1266,16 @@ if (d.rD === 1) {
     }
 };
 
-        function updateTimeRemaining(whIn, whOut) {
+        function updateTimeRemaining(ahIn, ahOut) {
             const timeRemainingElement = document.getElementById('time-remaining-value');
             if (!timeRemainingElement) return;
 
-            const powerFromUI = parseFloat(document.getElementById('power').textContent) || 0;
-            const capRemFromUI = parseFloat(document.getElementById('whNow').textContent) || 0;
+            const currentFromUI = parseFloat(document.getElementById('current').textContent) || 0;
+            const capRemFromUI = parseFloat(document.getElementById('ahNow').textContent) || 0;
 
-            let currentRem = powerFromUI;
-            let fullCap = whIn;
-            let dchgCap = whOut;
+            let currentRem = currentFromUI;
+            let fullCap = ahIn;
+            let dchgCap = ahOut;
 
             let diff = Math.max(0, fullCap - dchgCap);
             let remainingCap = Math.max(0, capRemFromUI - diff);
